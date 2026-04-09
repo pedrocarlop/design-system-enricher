@@ -219,9 +219,10 @@ After inspection artifacts exist:
 1. Read `references/evidence-generation.md`.
 2. Group evidence across the audit flow by final component key.
 3. Resolve the canonical destination for each grouped component.
-4. Merge the grouped evidence into canonical `README.md` files directly.
-5. Create or update `CONFLICTS.md` only when meaningful conflicts exist.
-6. If a temporary `NEW.md` is created during execution, merge it in the same run and delete it before finishing.
+4. For web-backed evidence with reachable recorded URLs, rerender the page and capture component-local annotated screenshots by temporarily outlining the matched component instances in red.
+5. Merge the grouped evidence into canonical `README.md` files directly.
+6. Create or update `CONFLICTS.md` only when meaningful conflicts exist.
+7. If a temporary `NEW.md` is created during execution, merge it in the same run and delete it before finishing.
 
 ## References
 

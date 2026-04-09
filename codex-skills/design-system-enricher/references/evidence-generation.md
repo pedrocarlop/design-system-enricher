@@ -20,6 +20,8 @@ Convert screenshot-grounded inspection evidence into canonical component `README
 - Preserve per-page provenance when combining observations from multiple inspections.
 - Resolve the canonical destination before writing component docs.
 - Do not leave `NEW.md` as a repository-stable artifact.
+- For web-backed inspections with a reachable recorded URL, prefer annotated component screenshots captured from a rerendered page in browser automation over raw screenshot copies.
+- Use temporary browser-side highlighting only. Do not edit repo files just to create the annotation.
 
 ## Grouping rules
 
@@ -36,6 +38,8 @@ If multiple pages contribute evidence for the same grouped component:
 - preserve separate observations where patterns differ
 - include multiple screenshots when needed
 - record every contributing inspection path in `## Notes`
+
+For web-backed evidence, prefer one annotated screenshot per contributing page.
 
 ## Destination resolution
 
@@ -67,6 +71,8 @@ For each grouped component, write or update:
 
 - `<component-doc-root>/README.md`
 - `<component-doc-root>/assets/...`
+
+For web-backed observations, assets should prefer a page rerender with the matched component instance or instances outlined in red before capture.
 
 Use this exact section structure:
 
@@ -120,6 +126,18 @@ When no mapping exists, use:
 - If a canonical `README.md` already exists, merge the current audit evidence into it in the same run.
 - If a temporary `NEW.md` is used during execution, delete it before finishing.
 - Create `CONFLICTS.md` only when meaningful conflicts remain visible after the merge.
+
+## Web annotation workflow
+
+When an inspection artifact contains a web `Source path or URL`:
+
+1. Reopen the page in browser automation.
+2. Identify the component instances using only evidence already recorded in the inspection artifact.
+3. Inject temporary highlight styling, preferably a red outline or inset ring, onto the matched elements.
+4. Capture the annotated page screenshot into the component `assets/` folder.
+5. If matching fails or the page cannot be rendered, fall back to the original inspection screenshot for that page.
+
+This rerender is only for image generation. Do not use it to invent new content evidence.
 
 ## Provenance rules
 
