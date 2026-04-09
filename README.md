@@ -161,6 +161,30 @@ If Codex recognizes the skill name (you may see an autocomplete or no error), yo
 
 ---
 
+## Updating the Skill
+
+If the skill has been updated on GitHub and you want the latest version, you cannot just run the install command again — it will fail because the skill folder already exists.
+
+To update, run these two commands in Terminal one after the other:
+
+**Step 1 — Remove the current version:**
+
+```bash
+rm -rf ~/.codex/skills/design-system-enricher
+```
+
+**Step 2 — Reinstall from GitHub:**
+
+```bash
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo pedrocarlop/design-system-enricher \
+  --path codex-skills/design-system-enricher
+```
+
+Then restart Codex to pick up the new version.
+
+---
+
 ## First-Time Setup
 
 The skill automatically checks for required tools every time you run it. If something is missing, it will walk you through the setup step by step — you do not need to configure anything in advance.
