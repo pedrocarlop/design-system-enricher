@@ -1,31 +1,38 @@
 # Knowledge Merge
 
-Use this workflow to update the canonical component doc after `NEW.md` exists.
+Use this workflow to update the canonical component doc after grouped audit evidence exists for a component.
 
 ## Purpose
 
-Merge screenshot-grounded evidence into `DS-system/<component-name>/README.md` without losing ambiguity or design-system mapping evidence.
+Merge screenshot-grounded evidence into `<component-doc-root>/README.md` without losing ambiguity or design-system mapping evidence.
 
-## Source files
+## Source inputs
 
-- `DS-system/<component-name>/NEW.md`
-- `DS-system/<component-name>/README.md` when it exists
-- `DS-system/<component-name>/assets/`
+- current audit evidence for one grouped component
+- `<component-doc-root>/README.md` when it exists
+- `<component-doc-root>/assets/`
+
+`<component-doc-root>` may be:
+
+- an installed package-backed component folder
+- a repo-local DS component folder
+- `unmatched/<component-name>`
+- `DS-system/<component-name>` when no DS kit exists
 
 ## Canonical output
 
-- `DS-system/<component-name>/README.md`
+- `<component-doc-root>/README.md`
 
 Conditional output:
 
-- `DS-system/<component-name>/CONFLICTS.md`
+- `<component-doc-root>/CONFLICTS.md`
 
 ## Missing README bootstrap
 
 If `README.md` does not exist:
 
-- create it from `NEW.md`
-- preserve the exact section structure from `NEW.md`
+- create it directly from the current audit evidence
+- preserve the exact section structure
 - keep all screenshot links valid
 - do not create `CONFLICTS.md` unless the incoming evidence already contains explicit unresolved conflicting patterns
 
@@ -77,7 +84,7 @@ Use the existing pattern split style in conflicting sections:
 ...
 
 #### Pattern B
-(source: NEW.md)
+(source: current audit run)
 ...
 ```
 
@@ -93,3 +100,9 @@ For mapping conflicts, include:
 - existing mapping evidence
 - new mapping evidence
 - recommended human review action
+
+## Lifecycle rule
+
+- `README.md` is the canonical deliverable.
+- `NEW.md` must not remain in the repository after a successful run.
+- If a temporary staging file is created internally, delete it before finishing.

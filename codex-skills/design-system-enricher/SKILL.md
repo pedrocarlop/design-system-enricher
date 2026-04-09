@@ -1,11 +1,11 @@
 ---
 name: design-system-enricher
-description: Use when Codex needs to turn screenshot-grounded UI evidence from a live web URL, local web repo view, iOS SwiftUI view, Android Jetpack Compose view, Figma frame, or numbered Figma section into `Flows/...` inspection docs and `DS-system/...` component knowledge with preserved design-system mappings.
+description: Use when Codex needs to turn screenshot-grounded UI evidence from live URLs, local views, or Figma into `Design system audit/...` inspection artifacts and canonical component `README.md` files written into the resolved design-system destination.
 ---
 
 # Design System Enricher
 
-Create screenshot-grounded UI inspection artifacts and merge-ready design-system knowledge from web, native, and Figma sources.
+Create screenshot-grounded UI audit artifacts and merge them into canonical component docs.
 
 ## When to use
 
@@ -13,9 +13,9 @@ Use this skill when the user wants to:
 
 - inspect UI from a live page or app view
 - inspect repo-local views and preserve file-to-screen provenance
-- extract reusable component evidence from screenshot-backed UI
-- turn Figma frames or numbered screen sections into ordered inspection artifacts
-- preserve design-system/library mappings while generating `DS-system` knowledge
+- inspect Figma frames or ordered sections
+- group multiple supplied pages into one audit flow
+- preserve design-system mappings while updating canonical component docs
 
 ## Required input contract
 
@@ -40,13 +40,14 @@ Supported sources:
 
 ## Non-negotiable rules
 
-- Screenshot evidence is mandatory for every inspected screen.
+- Screenshot evidence is mandatory for every inspected page or screen.
 - Do not continue to extraction if a screenshot cannot be captured or supplied.
 - For non-Figma sources, do not invent design-system names from visual similarity alone.
 - Use `unknown` when no trustworthy name exists.
 - For Figma sources, existing Code Connect mappings and published library component names are authoritative evidence.
-- Preserve per-screen provenance even when later grouping evidence across multiple screens.
-- The screenshot is the shared source-of-truth artifact across web, native, and Figma workflows.
+- Preserve per-page provenance even when later grouping evidence across multiple pages.
+- Resolve the canonical component-doc destination before writing any component `README.md`.
+- Do not leave persistent `NEW.md` files after a successful workflow.
 
 ## Source routing
 
@@ -61,40 +62,28 @@ Pick the first matching route:
 
 If multiple sources are provided:
 
-- inspect each source separately
-- preserve one inspection artifact per screen
-- run evidence generation only after all inspection artifacts are ready
+- inspect each page separately
+- preserve one page artifact per page
+- place all page artifacts under one audit flow for that invocation
+- run evidence generation only after all page artifacts are ready
 
-## Screenshot-first gating
+## Audit flow contract
 
-Before extracting structure, confirm the screenshot path that will anchor the inspection.
+Derive one `<run-slug>` for the whole invocation, using the first source slug by default and adding a numeric suffix only when needed for uniqueness.
 
-Required capture order by source:
+Write:
 
-- web URL: render in a browser, wait for stable load, then capture screenshot
-- web repo view: run the local render path first, then capture screenshot from the rendered view
-- iOS SwiftUI repo view: capture screenshot via a pluggable native backend, preferring an Appium-style inspector and falling back to preview or XCTest-backed capture
-- Android Compose repo view: capture screenshot via a pluggable native backend, preferring an Appium-style inspector and falling back to preview or emulator-backed capture
-- Figma: run `get_screenshot` for each frame before extracting structure
+- `Design system audit/<run-slug>/flow.md`
+- `Design system audit/<run-slug>/pages/<page-slug>/ui-inspection.md`
+- `Design system audit/<run-slug>/pages/<page-slug>/screenshots/<page-slug>.png`
 
-If capture fails:
+`flow.md` must record:
 
-- stop
-- report the missing capture step precisely
-- do not silently switch to code-only extraction
-
-## Common output contract
-
-Single-screen outputs:
-
-- `Flows/<slug>/ui-inspection.md`
-- `Flows/<slug>/screenshots/<slug>.png`
-
-Figma section outputs:
-
-- `Flows/<section-slug>/sequence.md`
-- `Flows/<section-slug>/screens/<nn-screen-slug>/ui-inspection.md`
-- `Flows/<section-slug>/screenshots/<nn-screen-slug>.png`
+- the source list in input order
+- the page slug for each inspected page
+- the output path for each page inspection
+- the screenshot path for each inspected page
+- notes about sequence ordering when the source was a Figma section
 
 Every `ui-inspection.md` must use this top-level structure:
 
@@ -164,7 +153,7 @@ Include these when available:
 `Design system mapping` must always record:
 
 - `Mapping status`: `mapped` or `unresolved`
-- `Evidence source`: Code Connect, library instance, repo signal, or source node
+- `Evidence source`: Code Connect, library instance, repo signal, source node, or package signal
 - `Library or system name` when known
 - `Component name`
 - `Code target` when known
@@ -183,6 +172,32 @@ Use the first reliable naming source that applies:
 
 For non-Figma sources, do not jump above step 4 unless the evidence explicitly exists.
 
+## Destination resolution
+
+Before writing component docs, resolve a canonical destination for each grouped component.
+
+Use these signals as authoritative when available:
+
+- mapped `Code target` path from inspection evidence
+- package manifests or lockfiles showing the DS dependency
+- direct imports or usages in source
+- an existing package or repo-local path that resolves on disk
+
+Destination rules:
+
+1. If the component maps to an installed package file such as `@material/web/button/filled-button.js`, create a sibling component folder beside the resolved module file and write:
+   - `<resolved-component-folder>/README.md`
+   - `<resolved-component-folder>/assets/...`
+2. If the component maps to a repo-local DS target, write the canonical doc in that component location.
+3. If the repo has a DS kit but this component cannot be matched to it, write:
+   - `unmatched/<component-name>/README.md`
+   - `unmatched/<component-name>/assets/...`
+4. Only if no DS kit can be resolved for the repo at all, fall back to:
+   - `DS-system/<component-name>/README.md`
+   - `DS-system/<component-name>/assets/...`
+
+Do not create a parallel `DS-system/` tree for matched components when a repo-backed DS kit already exists.
+
 ## Figma section handling
 
 For Figma sections:
@@ -194,17 +209,19 @@ For Figma sections:
 - process frames strictly by numeric prefix, not by canvas position
 - for each frame, run `get_screenshot` and `get_design_context`
 - use `get_code_connect_map` first, then `get_code_connect_suggestions`, then `search_design_system` if needed for mappings
-- write one `ui-inspection.md` per frame and one section-level `sequence.md`
+- write one page-level `ui-inspection.md` per frame under the shared audit flow
+- record the ordered frames in `flow.md`
 
 ## Evidence pipeline
 
 After inspection artifacts exist:
 
 1. Read `references/evidence-generation.md`.
-2. Generate or overwrite `DS-system/<component-name>/NEW.md`.
-3. If `README.md` exists for the component, or if the component needs a canonical doc, read `references/knowledge-merge.md`.
-4. Update or create `DS-system/<component-name>/README.md`.
+2. Group evidence across the audit flow by final component key.
+3. Resolve the canonical destination for each grouped component.
+4. Merge the grouped evidence into canonical `README.md` files directly.
 5. Create or update `CONFLICTS.md` only when meaningful conflicts exist.
+6. If a temporary `NEW.md` is created during execution, merge it in the same run and delete it before finishing.
 
 ## References
 

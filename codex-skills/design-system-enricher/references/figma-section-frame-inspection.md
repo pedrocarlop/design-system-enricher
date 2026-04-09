@@ -4,7 +4,7 @@ Use this workflow for a Figma frame URL or a Figma section URL containing ordere
 
 ## Purpose
 
-Create screenshot-grounded inspection artifacts from Figma while preserving screen order and design-system/library mappings.
+Create screenshot-grounded page inspections inside a shared audit flow while preserving screen order and design-system mappings.
 
 ## Tools
 
@@ -26,7 +26,10 @@ Use Figma MCP tools. The minimum tool set for this workflow is:
 5. Run `get_code_connect_map`.
 6. If no mapping is found, run `get_code_connect_suggestions`.
 7. If still unresolved, use `search_design_system` when library lookup is needed.
-8. Write one `Flows/<slug>/ui-inspection.md` and one screenshot file.
+8. Write:
+   - `Design system audit/<run-slug>/pages/<page-slug>/ui-inspection.md`
+   - `Design system audit/<run-slug>/pages/<page-slug>/screenshots/<page-slug>.png`
+9. Update `Design system audit/<run-slug>/flow.md`.
 
 ## Numbered section workflow
 
@@ -40,29 +43,30 @@ Use Figma MCP tools. The minimum tool set for this workflow is:
    - run `get_screenshot`
    - run `get_design_context`
    - resolve mappings with `get_code_connect_map`, then `get_code_connect_suggestions`, then `search_design_system` if needed
-   - write `Flows/<section-slug>/screens/<nn-screen-slug>/ui-inspection.md`
-   - write `Flows/<section-slug>/screenshots/<nn-screen-slug>.png`
-8. Write `Flows/<section-slug>/sequence.md` that records the ordered frames and their output paths.
+   - write `Design system audit/<run-slug>/pages/<page-slug>/ui-inspection.md`
+   - write `Design system audit/<run-slug>/pages/<page-slug>/screenshots/<page-slug>.png`
+8. Write `Design system audit/<run-slug>/flow.md` that records the ordered frames and their output paths.
 
-## Required `sequence.md` structure
+## Required `flow.md` structure
 
 Use this shape:
 
 ```md
-# Screen Sequence
+# Design System Audit Flow
 
 ## Source
 
-## Ordered frames
+## Ordered pages
 
 ## Notes
 ```
 
-Inside `## Ordered frames`, record each numbered frame with:
+Inside `## Ordered pages`, record each page with:
 
-- numeric position
-- original frame name
-- node id
+- input order
+- original frame or page name
+- node id when applicable
+- page slug
 - inspection file path
 - screenshot path
 

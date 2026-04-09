@@ -1,13 +1,11 @@
 # Design System Enricher
 
-`$design-system-enricher` is a Codex skill that helps turn UI screens into structured design-system knowledge.
+`$design-system-enricher` is a Codex skill that turns screenshot-grounded UI evidence into:
 
-It can inspect websites, local app views, and Figma screens, then generate:
+- `Design system audit/...` inspection artifacts
+- canonical component `README.md` files written into the resolved design-system destination
 
-- `Flows/...` inspection files
-- `DS-system/...` component knowledge files
-
-Important: those folders are generated only when you use the skill in a project. They are not part of the installed skill anymore.
+Important: these folders are generated only when you use the skill in a project. They are not part of the installed skill itself.
 
 ## What This Is For
 
@@ -15,8 +13,27 @@ Use this skill when you want Codex to:
 
 - inspect a web page or app screen
 - analyze a Figma frame or a numbered Figma section
+- group multiple supplied pages into one audit flow
 - turn screenshots into reusable component knowledge
-- build clean `ui-inspection.md` and `DS-system` documentation files
+- write component docs into the actual installed design system when the repo already has one
+
+## Output Model
+
+Each run produces one audit flow:
+
+- `Design system audit/<run-slug>/flow.md`
+- `Design system audit/<run-slug>/pages/<page-slug>/ui-inspection.md`
+- `Design system audit/<run-slug>/pages/<page-slug>/screenshots/<page-slug>.png`
+
+If you provide 2 links in one request, both pages belong to the same `<run-slug>`.
+
+Component docs are written to one of these destinations:
+
+- installed DS package or repo-local DS target when an authoritative mapping exists
+- `unmatched/<component-name>/README.md` when the repo has a DS kit but that component cannot be matched
+- `DS-system/<component-name>/README.md` only when no DS kit can be resolved for the repo
+
+The workflow must not leave both `NEW.md` and `README.md` after a successful run. `README.md` is the canonical output.
 
 ## Before You Start
 
@@ -66,12 +83,6 @@ Use $design-system-enricher
 
 If Codex recognizes the skill name, the install worked.
 
-## If Something Goes Wrong
-
-- If Terminal says the installer script cannot be found, update Codex and try again.
-- If Codex does not recognize `$design-system-enricher`, fully quit Codex and reopen it.
-- If you still get stuck, send the Terminal error message to the person maintaining this skill.
-
 ## How To Use It
 
 Write your request in plain language and include:
@@ -88,7 +99,7 @@ Use $design-system-enricher with these sources: <urls/paths/figma-links> and thi
 ### Example
 
 ```text
-Use $design-system-enricher with these sources: https://example.com/pricing and this goal: document reusable components and create DS-system knowledge.
+Use $design-system-enricher with these sources: https://example.com/pricing, https://example.com/signup and this goal: audit reusable components and update the installed design system docs.
 ```
 
 ## Sources You Can Give It
@@ -101,18 +112,13 @@ Use $design-system-enricher with these sources: https://example.com/pricing and 
 - a Figma frame URL
 - a Figma section URL with numbered child frames such as `01`, `02`, `03`
 
-## What The Skill Produces
+## Important Rules
 
-When you run it inside a project, the skill creates output such as:
-
-- `Flows/<screen-name>/ui-inspection.md`
-- `Flows/<screen-name>/screenshots/<screen-name>.png`
-- `DS-system/<component-name>/NEW.md`
-- `DS-system/<component-name>/README.md`
-
-## Important Rule
-
-Every inspection needs a screenshot. If a screenshot cannot be captured, the skill should stop instead of guessing.
+- Every inspection needs a screenshot. If a screenshot cannot be captured, the skill should stop instead of guessing.
+- Multiple supplied pages in one request belong to one audit flow.
+- If the repo already has a real design system installed, matched components should be documented inside that system instead of a parallel `DS-system/` folder.
+- `unmatched/` is only for components that do not map to the installed DS kit.
+- `DS-system/` is a fallback for repos that do not have a resolvable DS kit.
 
 ## Local Install For Maintainers
 

@@ -4,7 +4,7 @@ Use this workflow for a live web URL.
 
 ## Purpose
 
-Create a screenshot-grounded `ui-inspection.md` from a real rendered page without inventing component names.
+Create screenshot-grounded page inspections inside a shared audit flow without inventing component names.
 
 ## Required evidence
 
@@ -16,8 +16,9 @@ Create a screenshot-grounded `ui-inspection.md` from a real rendered page withou
 
 1. Open the URL in a real browser.
 2. Wait for the page to settle.
-3. Capture `Flows/<slug>/screenshots/<slug>.png`.
+3. Capture `Design system audit/<run-slug>/pages/<page-slug>/screenshots/<page-slug>.png`.
 4. Only after the screenshot exists, inspect the DOM.
+5. Update `Design system audit/<run-slug>/flow.md` with the page entry.
 
 If browser automation is available, prefer it for repeatable capture and DOM inspection.
 
@@ -48,8 +49,8 @@ Do not invent design-system names from visuals.
 
 Write:
 
-- `Flows/<slug>/ui-inspection.md`
-- `Flows/<slug>/screenshots/<slug>.png`
+- `Design system audit/<run-slug>/pages/<page-slug>/ui-inspection.md`
+- `Design system audit/<run-slug>/pages/<page-slug>/screenshots/<page-slug>.png`
 
 `## View metadata` must include:
 

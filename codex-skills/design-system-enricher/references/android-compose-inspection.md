@@ -8,7 +8,7 @@ v1 supports Jetpack Compose only. XML layouts are out of scope.
 
 ## Purpose
 
-Create a screenshot-grounded `ui-inspection.md` from a Compose screen while preserving file-to-screen provenance and Compose structure evidence.
+Create a screenshot-grounded page inspection inside a shared audit flow while preserving file-to-screen provenance and Compose structure evidence.
 
 ## Capture workflow
 
@@ -17,6 +17,8 @@ Create a screenshot-grounded `ui-inspection.md` from a Compose screen while pres
 3. Prefer an Appium-style inspector when available.
 4. Fall back to Compose preview or emulator-backed capture when needed.
 5. Do not continue if no screenshot can be produced.
+6. Save the screenshot to `Design system audit/<run-slug>/pages/<page-slug>/screenshots/<page-slug>.png`.
+7. Update `Design system audit/<run-slug>/flow.md` with the page entry.
 
 ## Extract
 
@@ -43,8 +45,8 @@ Prefer names from:
 
 Write:
 
-- `Flows/<slug>/ui-inspection.md`
-- `Flows/<slug>/screenshots/<slug>.png`
+- `Design system audit/<run-slug>/pages/<page-slug>/ui-inspection.md`
+- `Design system audit/<run-slug>/pages/<page-slug>/screenshots/<page-slug>.png`
 
 `## View metadata` must include:
 
