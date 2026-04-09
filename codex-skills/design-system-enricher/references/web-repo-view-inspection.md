@@ -1,0 +1,65 @@
+# Web Repo-View Inspection
+
+Use this workflow for a repo-local web page, route, Storybook story, or view entrypoint.
+
+## Purpose
+
+Create a screenshot-grounded `ui-inspection.md` from a locally rendered web view while preserving repo provenance.
+
+## Required evidence
+
+- rendered screenshot from the local app or preview path
+- route or entry-view provenance
+- source-backed selectors or identifiers when discoverable
+
+## Capture workflow
+
+1. Discover the local render path for the requested view.
+2. Start or reuse the local preview server when needed.
+3. Open the rendered page in a browser.
+4. Capture `Flows/<slug>/screenshots/<slug>.png`.
+5. Only after the screenshot exists, inspect the rendered DOM and the source files.
+
+If the view cannot be rendered locally, stop and report the missing local render requirement.
+
+## Extract
+
+- screenshot path and provenance
+- route, story, or entry-view path
+- repo file path for the screen when discoverable
+- top-level layout regions
+- stable selectors, `data-testid`, and wrapper names
+- component wrapper hierarchy
+- repeated structures and counts
+- explicit markup variants
+- screen-to-file provenance notes
+
+## Naming rules
+
+Prefer names from:
+
+1. existing repo component wrappers or test IDs
+2. stable selectors in the rendered output
+3. clearly named view-level wrappers
+4. `unknown`
+
+Do not rename structures to match a presumed design system unless the repo itself already uses that name.
+
+## Output requirements
+
+Write:
+
+- `Flows/<slug>/ui-inspection.md`
+- `Flows/<slug>/screenshots/<slug>.png`
+
+`## View metadata` must include:
+
+- `Platform: web`
+- `Source kind: repo-view`
+- `Source path or URL`
+- `Repo path` when known
+- `Route or entry view` when known
+- `Screenshot path`
+- `Screenshot provenance`
+- `Capture method`
+- `Goal`

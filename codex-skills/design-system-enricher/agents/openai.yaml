@@ -1,0 +1,7 @@
+interface:
+  display_name: "Design System Enricher"
+  short_description: "Extract screenshot-grounded design system evidence"
+  default_prompt: "Use $design-system-enricher with these sources: <urls/paths/figma-links> and this goal: <goal>."
+
+policy:
+  allow_implicit_invocation: false
