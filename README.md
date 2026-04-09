@@ -1,59 +1,129 @@
 # Design System Enricher
 
-`$design-system-enricher` is a Codex skill that turns screenshot-grounded UI evidence into:
+A Codex skill that looks at your screens — from Figma, live websites, or apps — takes screenshots, and automatically writes detailed component documentation for your design system.
 
-- `Design system audit/...` inspection artifacts
-- canonical component `README.md` files written into the resolved design-system destination
+Think of it as a design-system assistant that can **see** your UI and turn what it sees into structured, reusable knowledge.
 
-Important: these folders are generated only when you use the skill in a project. They are not part of the installed skill itself.
+---
 
-## What This Is For
+## How It Works
 
-Use this skill when you want Codex to:
+```
+┌─────────────────────────────────────┐
+│                                     │
+│   1. YOU GIVE IT A SOURCE           │
+│                                     │
+│   A Figma link, a website URL,      │
+│   or an app screen.                 │
+│                                     │
+└──────────────────┬──────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│                                     │
+│   2. IT TAKES A SCREENSHOT          │
+│                                     │
+│   The skill captures a real         │
+│   screenshot of the screen.         │
+│   Everything it writes is based     │
+│   on what it actually sees.         │
+│                                     │
+└──────────────────┬──────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│                                     │
+│   3. IT INSPECTS THE UI             │
+│                                     │
+│   It breaks down the screen into    │
+│   individual components: buttons,   │
+│   cards, nav bars, inputs, etc.     │
+│   Each one gets a name, structure,  │
+│   and usage notes.                  │
+│                                     │
+└──────────────────┬──────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│                                     │
+│   4. IT WRITES AN AUDIT REPORT      │
+│                                     │
+│   A structured inspection file      │
+│   is saved for every screen,        │
+│   along with the screenshot.        │
+│                                     │
+│   📁 Design system audit/           │
+│    └─ your-run/                     │
+│       ├─ flow.md                    │
+│       └─ pages/                     │
+│          └─ page-name/              │
+│             ├─ ui-inspection.md     │
+│             └─ screenshots/         │
+│                └─ page-name.png     │
+│                                     │
+└──────────────────┬──────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│                                     │
+│   5. IT DOCUMENTS EACH COMPONENT    │
+│                                     │
+│   For every component it found,     │
+│   it writes (or updates) a          │
+│   README.md with variants, usage    │
+│   guidelines, and screenshot        │
+│   evidence.                         │
+│                                     │
+│   If your project already has a     │
+│   design system installed, the      │
+│   docs go directly into it.         │
+│                                     │
+└─────────────────────────────────────┘
+```
 
-- inspect a web page or app screen
-- analyze a Figma frame or a numbered Figma section
-- group multiple supplied pages into one audit flow
-- turn screenshots into reusable component knowledge
-- write component docs into the actual installed design system when the repo already has one
+---
 
-## Output Model
+## What Can You Inspect?
 
-Each run produces one audit flow:
+| Source type | What to provide | Example |
+|---|---|---|
+| **Live website** | A URL | `https://yoursite.com/pricing` |
+| **Figma frame** | A Figma link to a frame | Paste the link from Figma |
+| **Figma section** | A Figma link to a section with numbered frames (`01`, `02`, `03`...) | Paste the section link |
+| **Web app (local)** | A local repo path | Add `platform=web` |
+| **iOS app (local)** | A local repo path | Add `platform=ios` |
+| **Android app (local)** | A local repo path | Add `platform=android` |
+| **Previous inspection** | A `ui-inspection.md` file from a past run | Point to the file |
 
-- `Design system audit/<run-slug>/flow.md`
-- `Design system audit/<run-slug>/pages/<page-slug>/ui-inspection.md`
-- `Design system audit/<run-slug>/pages/<page-slug>/screenshots/<page-slug>.png`
+You can give it **multiple sources at once**. They will all be grouped into a single audit.
 
-If you provide 2 links in one request, both pages belong to the same `<run-slug>`.
+---
 
-Component docs are written to one of these destinations:
+## Getting Started
 
-- installed DS package or repo-local DS target when an authoritative mapping exists
-- `unmatched/<component-name>/README.md` when the repo has a DS kit but that component cannot be matched
-- `DS-system/<component-name>/README.md` only when no DS kit can be resolved for the repo
+### What you need
 
-The workflow must not leave both `NEW.md` and `README.md` after a successful run. `README.md` is the canonical output.
+- **Codex** installed on your Mac
+- The **Terminal** app (it comes pre-installed on every Mac)
+- An internet connection
 
-## Before You Start
+You do **not** need to know Git, coding, or the command line beyond copy-pasting.
 
-You need:
+---
 
-1. Codex already installed on your computer
-2. The Terminal app on your Mac
-3. An internet connection
+### Step 1 — Open Terminal
 
-You do not need to know Git or coding. You only need to copy and paste one command.
+Open **Finder**, go to **Applications** > **Utilities**, and double-click **Terminal**.
 
-## Install From GitHub
+Or use Spotlight: press `Cmd + Space`, type `Terminal`, and press `Enter`.
 
-This is the recommended option for designers and other non-technical users.
+You will see a window with a blinking cursor. This is where you paste the install command.
 
-### Step 1: Open Terminal
+---
 
-Open the macOS `Terminal` app.
+### Step 2 — Copy the install command
 
-### Step 2: Copy and paste this command
+Select and copy this entire command (triple-click to select the whole block):
 
 ```bash
 python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
@@ -61,74 +131,129 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
   --path codex-skills/design-system-enricher
 ```
 
-### Step 3: Press `Enter`
+---
 
-Codex will install the skill into your personal skills folder:
+### Step 3 — Paste it into Terminal
 
-```text
-~/.codex/skills/design-system-enricher
+Click inside the Terminal window and press `Cmd + V` to paste.
+
+Then press `Enter`.
+
+Wait a few seconds. When you see a success message and the blinking cursor comes back, the install is done.
+
+---
+
+### Step 4 — Restart Codex
+
+Quit Codex completely and reopen it. This lets Codex detect the new skill.
+
+---
+
+### Step 5 — Verify the install
+
+Open Codex and type:
+
 ```
-
-### Step 4: Restart Codex
-
-Close Codex and open it again. This refreshes the skill list.
-
-### Step 5: Check that it worked
-
-In Codex, start a prompt with:
-
-```text
 Use $design-system-enricher
 ```
 
-If Codex recognizes the skill name, the install worked.
+If Codex recognizes the skill name (you may see an autocomplete or no error), you are all set.
+
+---
 
 ## How To Use It
 
-Write your request in plain language and include:
+Write a plain-language prompt in Codex with two things:
 
-1. the source or sources you want inspected
-2. the goal
+1. **The source(s)** you want inspected
+2. **Your goal**
 
-Use this template:
+### Template
 
-```text
-Use $design-system-enricher with these sources: <urls/paths/figma-links> and this goal: <goal>.
+```
+Use $design-system-enricher with these sources: <your links or paths>
+and this goal: <what you want to achieve>.
 ```
 
-### Example
+### Examples
 
-```text
-Use $design-system-enricher with these sources: https://example.com/pricing, https://example.com/signup and this goal: audit reusable components and update the installed design system docs.
+**Audit a single page:**
+
+```
+Use $design-system-enricher with these sources: https://mysite.com/pricing
+and this goal: identify all reusable components on the pricing page.
 ```
 
-## Sources You Can Give It
+**Audit multiple pages at once:**
 
-- a live web URL
-- a local repo view with `platform=web`
-- a local repo view with `platform=ios`
-- a local repo view with `platform=android`
-- an existing `ui-inspection.md`
-- a Figma frame URL
-- a Figma section URL with numbered child frames such as `01`, `02`, `03`
+```
+Use $design-system-enricher with these sources:
+https://mysite.com/pricing, https://mysite.com/signup
+and this goal: audit reusable components and update the design system docs.
+```
+
+**Inspect a Figma section:**
+
+```
+Use $design-system-enricher with these sources:
+<paste your Figma section link here>
+and this goal: document all components in this flow.
+```
+
+---
+
+## What It Produces
+
+### Audit folder
+
+Every run creates a folder under `Design system audit/` with:
+
+| File | What it contains |
+|---|---|
+| `flow.md` | An overview of all pages inspected in this run |
+| `ui-inspection.md` (per page) | A detailed breakdown of every component on that screen |
+| `screenshots/` (per page) | The actual screenshot used as evidence |
+
+### Component documentation
+
+For each component found, the skill writes a `README.md` that includes:
+
+- Component name and where the name comes from
+- Where it appears across inspected screens
+- Its internal structure
+- Known variants
+- Usage guidance
+- Screenshot evidence
+
+### Where the docs are saved
+
+The skill is smart about where it puts component docs:
+
+| Scenario | Destination |
+|---|---|
+| Your project has a design system installed and the component matches | Directly inside the design system |
+| Your project has a design system but the component does not match anything | `unmatched/<component>/README.md` |
+| Your project has no design system at all | `DS-system/<component>/README.md` |
+
+---
 
 ## Important Rules
 
-- Every inspection needs a screenshot. If a screenshot cannot be captured, the skill should stop instead of guessing.
-- Multiple supplied pages in one request belong to one audit flow.
-- If the repo already has a real design system installed, matched components should be documented inside that system instead of a parallel `DS-system/` folder.
-- `unmatched/` is only for components that do not map to the installed DS kit.
-- `DS-system/` is a fallback for repos that do not have a resolvable DS kit.
+- **Screenshots are required.** The skill will not guess. If it cannot capture a screenshot of a screen, it stops and tells you.
+- **Multiple pages = one audit.** When you give it several links at once, they are grouped together in a single audit run.
+- **It respects your existing design system.** If your project already has one installed, matched components go inside it — not into a separate folder.
 
-## Local Install For Maintainers
+---
 
-If you are working from a local checkout of this repository, you can install it with:
+## For Maintainers
+
+If you are developing this skill from a local copy of the repo, you can install it directly:
 
 ```bash
 ./install.sh
 ```
 
-Or into a custom Codex home:
+Or point to a custom Codex home for testing:
 
 ```bash
 CODEX_HOME=/tmp/codex-test ./install.sh
