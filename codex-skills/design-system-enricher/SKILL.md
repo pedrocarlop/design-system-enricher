@@ -67,6 +67,16 @@ If multiple sources are provided:
 - place all page artifacts under one audit flow for that invocation
 - run evidence generation only after all page artifacts are ready
 
+## Pre-flight setup check
+
+Before executing any source route, verify the required tools:
+
+1. Classify all sources from the user prompt.
+2. Read `references/preflight-setup.md`.
+3. Run the pre-flight procedure for the identified source types.
+4. Proceed to source routing only after all required capabilities are confirmed available.
+5. If a required capability cannot be resolved and the user declines partial execution, stop and explain what is needed.
+
 ## Audit flow contract
 
 Derive one `<run-slug>` for the whole invocation, using the first source slug by default and adding a numeric suffix only when needed for uniqueness.
@@ -226,6 +236,7 @@ After inspection artifacts exist:
 
 ## References
 
+- `references/preflight-setup.md`
 - `references/web-url-inspection.md`
 - `references/web-repo-view-inspection.md`
 - `references/ios-swiftui-inspection.md`

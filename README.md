@@ -161,6 +161,62 @@ If Codex recognizes the skill name (you may see an autocomplete or no error), yo
 
 ---
 
+## First-Time Setup
+
+The skill automatically checks for required tools every time you run it. If something is missing, it will walk you through the setup step by step — you do not need to configure anything in advance.
+
+### What tools are needed
+
+Different source types require different tools. The skill only checks for what you actually need:
+
+| Source type | Required tools |
+|---|---|
+| **Live website** | Browser automation (a browser MCP server in Codex) |
+| **Figma frame or section** | Figma MCP server (needs a Figma API token) |
+| **Local web app** | Browser automation + a running local dev server |
+| **iOS app** | Xcode with Simulator, or Appium |
+| **Android app** | Android Studio with an emulator, or Appium |
+
+All source types also require **file system write access** so the skill can create audit folders and documentation files.
+
+### Setting up Figma access
+
+If you plan to inspect Figma frames, you will need a Figma Personal Access Token. Here is how to get one:
+
+1. Open **Figma** in your web browser.
+2. Click your **profile icon** in the top-left corner.
+3. Go to **Settings**.
+4. Scroll down to **Personal Access Tokens**.
+5. Click **Create a new personal access token**. Name it something like "Codex".
+6. **Copy the token** — you will only see it once.
+7. Open **Codex Settings** → **MCP Servers**.
+8. Add the **Figma MCP server** and paste the token when prompted.
+
+### Setting up browser automation
+
+For inspecting live websites or local web apps, the skill needs a browser MCP server:
+
+1. Open **Codex Settings** → **MCP Servers**.
+2. Enable a browser server (such as Claude Preview, Claude in Chrome, or Control Chrome).
+3. Follow any on-screen prompts to complete the setup.
+
+### What happens when something is missing
+
+When you run the skill, it checks all required tools and shows you a status report:
+
+```
+Setup check:
+[pass] File system access
+[pass] Browser automation
+[NEEDS SETUP] Figma tools — not connected
+```
+
+For anything marked **NEEDS SETUP**, the skill gives you specific instructions to follow. Once you complete each step, it checks again and proceeds when everything is ready.
+
+If you cannot set up a particular tool right now, the skill will offer to proceed with the sources that are ready and skip the ones that are not.
+
+---
+
 ## How To Use It
 
 Write a plain-language prompt in Codex with two things:
