@@ -9,76 +9,134 @@ Think of it as a design-system assistant that can **see** your UI and turn what 
 ## How It Works
 
 ```
-┌─────────────────────────────────────┐
-│                                     │
-│   1. YOU GIVE IT A SOURCE           │
-│                                     │
-│   A Figma link, a website URL,      │
-│   or an app screen.                 │
-│                                     │
-└──────────────────┬──────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────┐
-│                                     │
-│   2. IT TAKES A SCREENSHOT          │
-│                                     │
-│   The skill captures a real         │
-│   screenshot of the screen.         │
-│   Everything it writes is based     │
-│   on what it actually sees.         │
-│                                     │
-└──────────────────┬──────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────┐
-│                                     │
-│   3. IT INSPECTS THE UI             │
-│                                     │
-│   It breaks down the screen into    │
-│   individual components: buttons,   │
-│   cards, nav bars, inputs, etc.     │
-│   Each one gets a name, structure,  │
-│   and usage notes.                  │
-│                                     │
-└──────────────────┬──────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────┐
-│                                     │
-│   4. IT WRITES AN AUDIT REPORT      │
-│                                     │
-│   A structured inspection file      │
-│   is saved for every screen,        │
-│   along with the screenshot.        │
-│                                     │
-│   📁 Design system audit/           │
-│    └─ your-run/                     │
-│       ├─ flow.md                    │
-│       └─ pages/                     │
-│          └─ page-name/              │
-│             ├─ ui-inspection.md     │
-│             └─ screenshots/         │
-│                └─ page-name.png     │
-│                                     │
-└──────────────────┬──────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────┐
-│                                     │
-│   5. IT DOCUMENTS EACH COMPONENT    │
-│                                     │
-│   For every component it found,     │
-│   it writes (or updates) a          │
-│   README.md with variants, usage    │
-│   guidelines, and screenshot        │
-│   evidence.                         │
-│                                     │
-│   If your project already has a     │
-│   design system installed, the      │
-│   docs go directly into it.         │
-│                                     │
-└─────────────────────────────────────┘
+                        ┌──────────────────────┐
+                        │    YOUR REQUEST       │
+                        │  Sources + Goal       │
+                        └──────────┬───────────┘
+                                   │
+                                   ▼
+                           ╱╲            ╱╲
+                         ╱    ╲        ╱    ╲
+                       ╱  What  ╲    ╱  Multi  ╲─── Yes ──▶ Each source is
+                       ╲  kind? ╱    ╲  source?╱          inspected separately,
+                         ╲    ╱        ╲    ╱             then merged at the end
+                           ╲╱            ╲╱
+                            │
+              ┌─────────────┼──────────────┬──────────────────┐
+              │             │              │                   │
+              ▼             ▼              ▼                   ▼
+     ┌──────────────┐ ┌──────────┐ ┌─────────────┐  ┌────────────────┐
+     │  Figma URL   │ │ Live web │ │  Local repo  │  │   Existing     │
+     │              │ │   URL    │ │  (web, iOS,  │  │ ui-inspection  │
+     │ Frame or     │ │          │ │  Android)    │  │     .md        │
+     │ numbered     │ │ Capture  │ │              │  │                │
+     │ section      │ │ screen + │ │ Build/serve  │  │ Skip straight  │
+     │              │ │ inspect  │ │ + capture +  │  │ to evidence    │
+     │ Screenshot + │ │ DOM      │ │ inspect +    │  │ generation     │
+     │ design       │ │          │ │ track file   │  │                │
+     │ context +    │ │          │ │ provenance   │  │                │
+     │ code connect │ │          │ │              │  │                │
+     │ mappings     │ │          │ │              │  │                │
+     └──────┬───────┘ └────┬─────┘ └──────┬──────┘  └───────┬────────┘
+            │              │              │                  │
+            └──────────────┴──────┬───────┴──────────────────┘
+                                  │
+                    All routes produce the same
+                    per-page inspection output
+                                  │
+                                  ▼
+                   ┌──────────────────────────────┐
+                   │     AUDIT REPORT CREATED      │
+                   │                               │
+                   │  Design system audit/          │
+                   │   └─ run-name/                 │
+                   │      ├─ flow.md                │
+                   │      └─ pages/                 │
+                   │         └─ page-name/          │
+                   │            ├─ ui-inspection.md  │
+                   │            └─ screenshots/      │
+                   │               └─ page.png       │
+                   └──────────────┬────────────────┘
+                                  │
+                                  ▼
+                   ┌──────────────────────────────┐
+                   │  GROUP EVIDENCE BY COMPONENT  │
+                   │                               │
+                   │  Combine findings across all  │
+                   │  inspected pages into one     │
+                   │  record per component.        │
+                   └──────────────┬────────────────┘
+                                  │
+                                  ▼
+                            ╱───────────╲
+                          ╱   Does your   ╲
+                        ╱   project have    ╲
+                       ╲  a design system?  ╱
+                         ╲   installed    ╱
+                           ╲           ╱
+                            ╲────────╱
+                                │
+              ┌─────────────────┼──────────────────┐
+              │                 │                   │
+         Yes, and the      Yes, but the       No design system
+         component          component           found at all
+         matches            doesn't match
+              │                 │                   │
+              ▼                 ▼                   ▼
+     ┌──────────────┐  ┌───────────────┐  ┌───────────────┐
+     │ Write docs   │  │ Write docs    │  │ Write docs    │
+     │ directly     │  │ to:           │  │ to:           │
+     │ inside the   │  │               │  │               │
+     │ design       │  │ unmatched/    │  │ DS-system/    │
+     │ system       │  │  <component>/ │  │  <component>/ │
+     │ package      │  │   README.md   │  │   README.md   │
+     └──────┬───────┘  └──────┬────────┘  └──────┬────────┘
+            │                 │                   │
+            └─────────────────┴─────────┬─────────┘
+                                        │
+                                        ▼
+                                  ╱───────────╲
+                                ╱  Web-backed   ╲
+                               ╲  evidence with  ╱
+                                ╲  live URL?    ╱
+                                  ╲           ╱
+                                   ╲────────╱
+                                       │
+                              ┌────────┴────────┐
+                              │                 │
+                             Yes                No
+                              │                 │
+                              ▼                 ▼
+                   ┌─────────────────┐ ┌─────────────────┐
+                   │ Re-render page  │ │ Reuse original  │
+                   │ and capture     │ │ inspection      │
+                   │ annotated       │ │ screenshot      │
+                   │ screenshots     │ │ as evidence     │
+                   │ (red outlines   │ │                 │
+                   │ on components)  │ │                 │
+                   └────────┬────────┘ └────────┬────────┘
+                            │                   │
+                            └─────────┬─────────┘
+                                      │
+                                      ▼
+                   ┌──────────────────────────────┐
+                   │  WRITE COMPONENT README.md    │
+                   │  + optional CONFLICTS.md      │
+                   │                               │
+                   │  Each component gets:          │
+                   │  • Name + where name comes    │
+                   │    from                        │
+                   │  • Variants and structure      │
+                   │  • Usage across screens        │
+                   │  • Screenshot evidence          │
+                   │  • Design system mapping        │
+                   └──────────────┬────────────────┘
+                                  │
+                                  ▼
+                        ┌─────────────────┐
+                        │  DESIGN SYSTEM   │
+                        │   ENRICHED       │
+                        └─────────────────┘
 ```
 
 ---
