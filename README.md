@@ -9,134 +9,311 @@ Think of it as a design-system assistant that can **see** your UI and turn what 
 ## How It Works
 
 ```
-                        ┌──────────────────────┐
-                        │    YOUR REQUEST       │
-                        │  Sources + Goal       │
-                        └──────────┬───────────┘
-                                   │
-                                   ▼
-                           ╱╲            ╱╲
-                         ╱    ╲        ╱    ╲
-                       ╱  What  ╲    ╱  Multi  ╲─── Yes ──▶ Each source is
-                       ╲  kind? ╱    ╲  source?╱          inspected separately,
-                         ╲    ╱        ╲    ╱             then merged at the end
-                           ╲╱            ╲╱
-                            │
-              ┌─────────────┼──────────────┬──────────────────┐
-              │             │              │                   │
-              ▼             ▼              ▼                   ▼
-     ┌──────────────┐ ┌──────────┐ ┌─────────────┐  ┌────────────────┐
-     │  Figma URL   │ │ Live web │ │  Local repo  │  │   Existing     │
-     │              │ │   URL    │ │  (web, iOS,  │  │ ui-inspection  │
-     │ Frame or     │ │          │ │  Android)    │  │     .md        │
-     │ numbered     │ │ Capture  │ │              │  │                │
-     │ section      │ │ screen + │ │ Build/serve  │  │ Skip straight  │
-     │              │ │ inspect  │ │ + capture +  │  │ to evidence    │
-     │ Screenshot + │ │ DOM      │ │ inspect +    │  │ generation     │
-     │ design       │ │          │ │ track file   │  │                │
-     │ context +    │ │          │ │ provenance   │  │                │
-     │ code connect │ │          │ │              │  │                │
-     │ mappings     │ │          │ │              │  │                │
-     └──────┬───────┘ └────┬─────┘ └──────┬──────┘  └───────┬────────┘
-            │              │              │                  │
-            └──────────────┴──────┬───────┴──────────────────┘
-                                  │
-                    All routes produce the same
-                    per-page inspection output
-                                  │
-                                  ▼
-                   ┌──────────────────────────────┐
-                   │     AUDIT REPORT CREATED      │
-                   │                               │
-                   │  Design system audit/          │
-                   │   └─ run-name/                 │
-                   │      ├─ flow.md                │
-                   │      └─ pages/                 │
-                   │         └─ page-name/          │
-                   │            ├─ ui-inspection.md  │
-                   │            └─ screenshots/      │
-                   │               └─ page.png       │
-                   └──────────────┬────────────────┘
-                                  │
-                                  ▼
-                   ┌──────────────────────────────┐
-                   │  GROUP EVIDENCE BY COMPONENT  │
-                   │                               │
-                   │  Combine findings across all  │
-                   │  inspected pages into one     │
-                   │  record per component.        │
-                   └──────────────┬────────────────┘
-                                  │
-                                  ▼
-                            ╱───────────╲
-                          ╱   Does your   ╲
-                        ╱   project have    ╲
-                       ╲  a design system?  ╱
-                         ╲   installed    ╱
-                           ╲           ╱
-                            ╲────────╱
-                                │
-              ┌─────────────────┼──────────────────┐
-              │                 │                   │
-         Yes, and the      Yes, but the       No design system
-         component          component           found at all
-         matches            doesn't match
-              │                 │                   │
-              ▼                 ▼                   ▼
-     ┌──────────────┐  ┌───────────────┐  ┌───────────────┐
-     │ Write docs   │  │ Write docs    │  │ Write docs    │
-     │ directly     │  │ to:           │  │ to:           │
-     │ inside the   │  │               │  │               │
-     │ design       │  │ unmatched/    │  │ DS-system/    │
-     │ system       │  │  <component>/ │  │  <component>/ │
-     │ package      │  │   README.md   │  │   README.md   │
-     └──────┬───────┘  └──────┬────────┘  └──────┬────────┘
-            │                 │                   │
-            └─────────────────┴─────────┬─────────┘
-                                        │
-                                        ▼
-                                  ╱───────────╲
-                                ╱  Web-backed   ╲
-                               ╲  evidence with  ╱
-                                ╲  live URL?    ╱
-                                  ╲           ╱
-                                   ╲────────╱
-                                       │
-                              ┌────────┴────────┐
-                              │                 │
-                             Yes                No
-                              │                 │
-                              ▼                 ▼
-                   ┌─────────────────┐ ┌─────────────────┐
-                   │ Re-render page  │ │ Reuse original  │
-                   │ and capture     │ │ inspection      │
-                   │ annotated       │ │ screenshot      │
-                   │ screenshots     │ │ as evidence     │
-                   │ (red outlines   │ │                 │
-                   │ on components)  │ │                 │
-                   └────────┬────────┘ └────────┬────────┘
-                            │                   │
-                            └─────────┬─────────┘
+                        ┌───────────────────────────┐
+                        │       YOUR REQUEST         │
+                        │     Sources  +  Goal       │
+                        └─────────────┬─────────────┘
                                       │
                                       ▼
-                   ┌──────────────────────────────┐
-                   │  WRITE COMPONENT README.md    │
-                   │  + optional CONFLICTS.md      │
-                   │                               │
-                   │  Each component gets:          │
-                   │  • Name + where name comes    │
-                   │    from                        │
-                   │  • Variants and structure      │
-                   │  • Usage across screens        │
-                   │  • Screenshot evidence          │
-                   │  • Design system mapping        │
-                   └──────────────┬────────────────┘
-                                  │
-                                  ▼
-                        ┌─────────────────┐
-                        │  DESIGN SYSTEM   │
-                        │   ENRICHED       │
-                        └─────────────────┘
+                        ┌───────────────────────────┐
+                        │    PRE-FLIGHT CHECK        │
+                        │                            │
+                        │  Verifies that every tool  │
+                        │  you need is connected     │
+                        │  (browser, Figma, etc.)    │
+                        └─────────────┬─────────────┘
+                                      │
+                                      ▼
+                                ╱───────────╲
+                              ╱   All tools   ╲
+                             ╲    ready?      ╱
+                               ╲            ╱
+                                ╲──────────╱
+                                     │
+                       ┌─────────────┼─────────────┐
+                       │             │             │
+                      Yes        Some missing    All missing
+                       │             │             │
+                       │             ▼             │
+                       │   ┌────────────────┐      │
+                       │   │ Guide you      │      │
+                       │   │ through setup  │      │
+                       │   │ step by step.  │      │
+                       │   │                │      │
+                       │   │ Offer to run   │      │
+                       │   │ with what is   │      │
+                       │   │ available and  │      │
+                       │   │ skip the rest. │      │
+                       │   └───────┬────────┘      │
+                       │           │               │
+                       │     ┌─────┴─────┐         │
+                       │     │           │         │
+                       │   Fixed     Partial       ▼
+                       │     │        run     ┌──────────┐
+                       │     │         │      │  STOP    │
+                       ▼     ▼         ▼      │  Setup   │
+                       ·─────·─────────·      │  needed  │
+                             │                └──────────┘
+                             ▼
+                       ╱───────────╲
+                     ╱   What kind   ╲
+                    ╲   of source?   ╱
+                      ╲            ╱
+                       ╲──────────╱
+                            │
+        ┌───────────────┬───┴────────┬──────────────────┐
+        │               │            │                  │
+        ▼               ▼            ▼                  ▼
+   ┌─────────┐   ┌──────────┐ ┌──────────┐   ┌──────────────┐
+   │ Figma   │   │ Live web │ │  Local   │   │  Existing    │
+   │  URL    │   │   URL    │ │  repo    │   │ ui-inspection│
+   └────┬────┘   └────┬─────┘ └────┬─────┘   │    .md       │
+        │              │            │         │              │
+        ▼              │            │         │ Skip to      │
+   ╱─────────╲         │            │         │ evidence ────┐
+ ╱  Frame or   ╲       │            │         │ generation   │
+╲   section?   ╱       │            │         └──────────────┘
+  ╲          ╱         │            │                        │
+   ╲────────╱          │            │                        │
+       │               │            │                        │
+   ┌───┴────┐          │            ▼                        │
+   │        │          │     ╱────────────╲                  │
+   ▼        ▼          │   ╱  Platform?    ╲                 │
+ Single  Section       │   ╲              ╱                  │
+ frame   (numbered)    │     ╲──────────╱                    │
+   │        │          │          │                          │
+   │        ▼          │    ┌─────┼──────┐                   │
+   │  ╱──────────╲     │    │     │      │                   │
+   │╱  Frames     ╲    │    ▼     ▼      ▼                   │
+   │╲ numbered     ╱   │   web   iOS  Android                │
+   │  ╲ 01,02,03? ╱    │    │     │      │                   │
+   │   ╲─────────╱     │    │  SwiftUI Compose               │
+   │       │           │    │   only   only                  │
+   │   ┌───┴───┐       │    │     │      │                   │
+   │  Yes      No      │    └─────┼──────┘                   │
+   │   │       │       │          │                          │
+   │   │       ▼       │    Build or serve                   │
+   │   │  ┌────────┐   │    the local app,                   │
+   │   │  │  STOP  │   │    track file                      │
+   │   │  │  Ask   │   │    provenance                      │
+   │   │  │ to fix │   │          │                          │
+   │   │  │numbers │   │          │                          │
+   │   │  └────────┘   │          │                          │
+   │   │               │          │                          │
+   │   ▼               │          │                          │
+   │  Process each     │          │                          │
+   │  frame in         │          │                          │
+   │  numbered order   │          │                          │
+   │   │               │          │                          │
+   ▼   ▼               ▼          ▼                          │
+   ·───·───────────────·──────────·                          │
+                  │                                          │
+      ┌───────────────────────────┐                          │
+      │     TAKE SCREENSHOT       │                          │
+      └─────────────┬─────────────┘                          │
+                    │                                        │
+                    ▼                                        │
+              ╱───────────╲                                  │
+            ╱  Screenshot   ╲                                │
+           ╲  captured OK?  ╱                                │
+             ╲            ╱                                  │
+              ╲──────────╱                                   │
+                   │                                         │
+              ┌────┴────┐                                    │
+              │         │                                    │
+             Yes        No                                   │
+              │         │                                    │
+              │         ▼                                    │
+              │    ┌──────────┐                              │
+              │    │   STOP   │                              │
+              │    │ Cannot   │                              │
+              │    │ continue │                              │
+              │    │ without  │                              │
+              │    │ evidence │                              │
+              │    └──────────┘                              │
+              │                                              │
+              ▼                                              │
+   ┌───────────────────────────┐                             │
+   │    INSPECT THE UI          │                             │
+   │                            │                             │
+   │  Break down into           │                             │
+   │  components. Name each     │                             │
+   │  one using evidence:       │                             │
+   │                            │                             │
+   │  Figma:                    │                             │
+   │   Code Connect mapping     │                             │
+   │    → library name          │                             │
+   │     → instance name        │                             │
+   │      → node name           │                             │
+   │       → "unknown"          │                             │
+   │                            │                             │
+   │  Web / App:                │                             │
+   │   data-component / testid  │                             │
+   │    → stable CSS classes    │                             │
+   │     → named wrappers       │                             │
+   │      → "unknown"           │                             │
+   │                            │                             │
+   │  Never invent a name       │                             │
+   │  from visuals alone.       │                             │
+   └─────────────┬─────────────┘                             │
+                 │                                           │
+                 ▼                                           │
+   ┌───────────────────────────┐                             │
+   │   WRITE AUDIT ARTIFACTS    │                             │
+   │                            │◀────────────────────────────┘
+   │  Design system audit/      │  (existing inspection
+   │   └─ run-name/             │   joins here)
+   │      ├─ flow.md            │
+   │      └─ pages/             │
+   │         └─ page-name/      │
+   │            ├─ ui-inspection │
+   │            │   .md          │
+   │            └─ screenshots/  │
+   │               └─ page.png   │
+   └─────────────┬──────────────┘
+                 │
+     ┌───────────┴────────────────────┐
+     │  If multiple sources were       │
+     │  provided, repeat the above     │
+     │  for each one. All pages go     │
+     │  under the same audit flow.     │
+     │  Continue only after ALL pages  │
+     │  are inspected.                 │
+     └───────────┬────────────────────┘
+                 │
+                 ▼
+   ┌───────────────────────────┐
+   │  GROUP BY COMPONENT        │
+   │                            │
+   │  Same component found on   │
+   │  3 pages? → 1 record with  │
+   │  evidence from all 3.      │
+   └─────────────┬─────────────┘
+                 │
+                 ▼
+           ╱───────────╲
+         ╱  Does your    ╲
+        ╲  project have   ╱
+          ╲ a design     ╱
+           ╲ system?    ╱
+            ╲──────────╱
+                 │
+     ┌───────────┼───────────┐
+     │           │           │
+  Yes, and    Yes, but     No DS
+  component   component    at all
+  matches     unmatched
+     │           │           │
+     ▼           ▼           ▼
+ ┌────────┐ ┌────────┐ ┌────────┐
+ │ Inside │ │  un-   │ │  DS-   │
+ │ the DS │ │matched/│ │system/ │
+ │package │ │  ...   │ │  ...   │
+ └───┬────┘ └───┬────┘ └───┬────┘
+     │           │           │
+     └───────────┼───────────┘
+                 │
+                 ▼
+           ╱───────────╲
+         ╱  Web-backed   ╲
+        ╲  evidence with  ╱
+          ╲ reachable    ╱
+           ╲ URL?       ╱
+            ╲──────────╱
+                 │
+            ┌────┴────┐
+            │         │
+           Yes        No
+            │         │
+            ▼         │
+  ┌──────────────┐    │
+  │ Re-render    │    │
+  │ page, add    │    │
+  │ red outlines │    │
+  │ to matched   │    │
+  │ components,  │    │
+  │ capture      │    │
+  └──────┬───────┘    │
+         │            │
+         ▼            │
+   ╱───────────╲      │
+ ╱  Annotation  ╲     │
+╲  succeeded?    ╱    │
+  ╲            ╱      │
+   ╲──────────╱       │
+        │              │
+   ┌────┴────┐         │
+   │         │         │
+  Yes        No        │
+   │         │         │
+   │         ▼         │
+   │  ┌───────────┐    │
+   │  │ Use orig. │    │
+   │  │ screenshot│    │
+   │  │ + document│    │
+   │  │ WHY it    │    │
+   │  │ failed    │    │
+   │  └─────┬─────┘    │
+   │        │          │
+   └────────┼──────────┘
+            │
+            ▼
+      ╱───────────╲
+    ╱   README.md   ╲
+   ╲  already exists ╱
+     ╲ for this     ╱
+      ╲ component? ╱
+       ╲──────────╱
+            │
+       ┌────┴────┐
+       │         │
+      Yes        No
+       │         │
+       ▼         ▼
+ ┌──────────┐ ┌──────────┐
+ │  MERGE   │ │ CREATE   │
+ │  new     │ │ fresh    │
+ │ evidence │ │ README   │
+ │ into     │ │ from     │
+ │ existing │ │ audit    │
+ │ doc      │ │ evidence │
+ └────┬─────┘ └────┬─────┘
+      │             │
+      ▼             │
+ ╱──────────╲       │
+╱ Conflicts  ╲      │
+╲ between old ╱     │
+ ╲ and new?  ╱      │
+  ╲─────────╱       │
+      │              │
+  ┌───┴───┐          │
+  │       │          │
+ Yes      No         │
+  │       │          │
+  ▼       │          │
+┌──────┐  │          │
+│Write │  │          │
+│CONFL-│  │          │
+│ICTS  │  │          │
+│.md   │  │          │
+└──┬───┘  │          │
+   │      │          │
+   └──────┼──────────┘
+          │
+          ▼
+   ┌───────────────────────────┐
+   │   CLEANUP                  │
+   │                            │
+   │  Delete any temporary      │
+   │  NEW.md files. Only        │
+   │  README.md is final.       │
+   └─────────────┬─────────────┘
+                 │
+                 ▼
+        ┌─────────────────┐
+        │  DESIGN SYSTEM   │
+        │    ENRICHED      │
+        └─────────────────┘
 ```
 
 ---
