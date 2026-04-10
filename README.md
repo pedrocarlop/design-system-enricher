@@ -1,8 +1,8 @@
 # Design System Enricher
 
-A Codex skill that looks at your screens — from Figma, live websites, or apps — takes screenshots, and automatically writes detailed component documentation for your design system.
+A Codex skill that looks at your screens — from Figma, live websites, or apps — takes screenshots, and captures how your components are actually used across real product flows. It adds an **in-product usage context layer** on top of your existing design-system documentation — preserving what the design system already says and enriching it with real usage evidence.
 
-Think of it as a design-system assistant that can **see** your UI and turn what it sees into structured, reusable knowledge.
+Think of it as a design-system assistant that can **see** your UI and turn what it sees into structured, contextual knowledge about how components are used in practice.
 
 ---
 
@@ -158,19 +158,23 @@ Think of it as a design-system assistant that can **see** your UI and turn what 
    └─────────────┬──────────────┘                            │
                  │                                           │
                  ▼                                           │
-   ┌─────────────────────────────┐                           │
-   │   WRITE AUDIT ARTIFACTS     │                           │
-   │                             │◀──────────────────────────┘
-   │  Design system audit/       │  (existing inspection
-   │   └─ run-name/              │   joins here)
-   │      ├─ flow.md             │
-   │      └─ pages/              │
-   │         └─ page-name/       │
-   │            ├─ ui-inspection │
-   │            │   .md          │
-   │            └─ screenshots/  │
-   │               └─ page.png   │
-   └─────────────┬───────────────┘
+   ┌───────────────────────────┐                             │
+   │   WRITE AUDIT ARTIFACTS    │                             │
+   │                            │◀────────────────────────────┘
+   │  Design system audit/      │  (existing inspection
+   │   └─ flow-name/            │   joins here)
+   │      ├─ flow.md            │
+   │      ├─ pages/             │
+   │      │  └─ page-name/      │
+   │      │     ├─ ui-inspection│
+   │      │     │   .md         │
+   │      │     └─ screenshots/ │
+   │      │        └─ page.png  │
+   │      └─ observations/      │
+   │         └─ component-key/  │
+   │            ├─ page-name.md │
+   │            └─ assets/      │
+   └─────────────┬──────────────┘
                  │
      ┌───────────┴─────────────────────┐
      │  If multiple sources were       │
@@ -188,7 +192,11 @@ Think of it as a design-system assistant that can **see** your UI and turn what 
    │  Same component found on   │
    │  3 pages? → 1 record with  │
    │  evidence from all 3.      │
-   └─────────────┬──────────────┘
+   │                            │
+   │  Generate contextual       │
+   │  observations per page     │
+   │  before any merge.         │
+   └─────────────┬─────────────┘
                  │
                  ▼
            ╱───────────╲
@@ -272,12 +280,13 @@ Think of it as a design-system assistant that can **see** your UI and turn what 
        ▼         ▼
  ┌──────────┐ ┌──────────┐
  │  MERGE   │ │ CREATE   │
- │  new     │ │ fresh    │
- │ evidence │ │ README   │
- │ into     │ │ from     │
- │ existing │ │ audit    │
- │ doc      │ │ evidence │
+ │contextual│ │contextual│
+ │  layer   │ │  layer   │
+ │ into     │ │ in new   │
+ │ existing │ │ README   │
+ │   doc    │ │          │
  └────┬─────┘ └────┬─────┘
+<<<<<<< HEAD
       │            │
       ▼            │
  ╱──────────╲      │
@@ -299,6 +308,29 @@ Think of it as a design-system assistant that can **see** your UI and turn what 
 └──┬───┘  │        │
    │      │        │
    └──────┼────────┘
+=======
+      │             │
+      ▼             │
+ ╱──────────╲       │
+╱ Contextual ╲      │
+╲ conflicts?  ╱     │
+ ╲ detected? ╱      │
+  ╲─────────╱       │
+      │              │
+  ┌───┴───┐          │
+  │       │          │
+ Yes      No         │
+  │       │          │
+  ▼       │          │
+┌──────┐  │          │
+│Write │  │          │
+│CONFL-│  │          │
+│ICTS  │  │          │
+│.md   │  │          │
+└──┬───┘  │          │
+   │      │          │
+   └──────┼──────────┘
+>>>>>>> db873eb (Refactor pipeline to produce contextual usage layer instead of canonical component docs)
           │
           ▼
    ┌────────────────────────────┐
@@ -528,17 +560,20 @@ Every run creates a folder under `Design system audit/` with:
 | `flow.md` | An overview of all pages inspected in this run |
 | `ui-inspection.md` (per page) | A detailed breakdown of every component on that screen |
 | `screenshots/` (per page) | The actual screenshot used as evidence |
+| `observations/<component>/` | Per-page contextual usage observations, one file per page per component |
 
 ### Component documentation
 
-For each component found, the skill writes a `README.md` that includes:
+For each component found, the skill enriches the canonical `README.md` with an **in-product usage layer**. It does not overwrite what the design system already defines. Instead it adds:
 
-- Component name and where the name comes from
-- Where it appears across inspected screens
-- Its internal structure
-- Known variants
-- Usage guidance
-- Screenshot evidence
+- Where the component appears across flows and screens
+- What it represents in each product context
+- Common layout modes and grouping patterns
+- Content format patterns observed in real usage
+- Variants seen in product
+- Linked screenshot evidence
+
+Detailed observation files are stored in a `usage-context/<flow-name>/` folder alongside the component docs.
 
 ### Where the docs are saved
 
@@ -557,6 +592,7 @@ The skill is smart about where it puts component docs:
 - **Screenshots are required.** The skill will not guess. If it cannot capture a screenshot of a screen, it stops and tells you.
 - **Multiple pages = one audit.** When you give it several links at once, they are grouped together in a single audit run.
 - **It respects your existing design system.** If your project already has one installed, matched components go inside it — not into a separate folder.
+- **It enriches, not replaces.** The skill adds an in-product usage layer on top of existing canonical docs. It will not overwrite generic design-system guidance that is already there unless you explicitly ask it to.
 
 ---
 

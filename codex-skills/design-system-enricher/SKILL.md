@@ -1,11 +1,22 @@
 ---
 name: design-system-enricher
-description: Use when Codex needs to turn screenshot-grounded UI evidence from live URLs, local views, or Figma into `Design system audit/...` inspection artifacts and canonical component `README.md` files written into the resolved design-system destination.
+description: Use when Codex needs to inspect UI from Figma, live URLs, local views, or apps, capture screenshot-grounded evidence, generate flow-level component usage observations, and enrich canonical design-system docs with in-product usage context.
 ---
 
 # Design System Enricher
 
-Create screenshot-grounded UI audit artifacts and merge them into canonical component docs.
+Inspect real product UI and turn it into structured design-system context.
+
+## Purpose
+
+This skill does not recreate the generic design-system specification of a component.
+
+Its purpose is to add an **in-product usage layer** on top of the existing design-system documentation by capturing how components are actually used across real flows, screens, and teams.
+
+The output should help both:
+
+- human designers understand how a component is used in practice
+- AI agents design by analogy using existing product patterns
 
 ## When to use
 
@@ -15,7 +26,8 @@ Use this skill when the user wants to:
 - inspect repo-local views and preserve file-to-screen provenance
 - inspect Figma frames or ordered sections
 - group multiple supplied pages into one audit flow
-- preserve design-system mappings while updating canonical component docs
+- preserve design-system mappings
+- enrich component docs with real usage context from product flows
 
 ## Required input contract
 
@@ -26,7 +38,7 @@ The prompt should include:
 
 Preferred prompt:
 
-`Use $design-system-enricher with these sources: <urls/paths/figma-links> and this goal: <goal>.`
+`Use $design-system-enricher with these sources: <sources> and this goal: <goal>.`
 
 Supported sources:
 
@@ -46,7 +58,9 @@ Supported sources:
 - Use `unknown` when no trustworthy name exists.
 - For Figma sources, existing Code Connect mappings and published library component names are authoritative evidence.
 - Preserve per-page provenance even when later grouping evidence across multiple pages.
-- Resolve the canonical component-doc destination before writing any component `README.md`.
+- Resolve the canonical component-doc destination before writing any contextual knowledge.
+- Do not overwrite generic component guidance that already belongs to the design system.
+- Treat the existing component `README.md` as canonical and add contextual usage knowledge on top of it.
 - Do not leave persistent `NEW.md` files after a successful workflow.
 - For web-backed inspections with reachable URLs and selector-backed evidence, do not silently copy the raw page screenshot as the component asset. Attempt annotated highlight capture first, then record an explicit fallback reason if it fails.
 
@@ -70,7 +84,7 @@ If multiple sources are provided:
 
 ## Pre-flight setup check
 
-Before executing any source route, verify the required tools:
+Before executing any source route:
 
 1. Classify all sources from the user prompt.
 2. Read `references/preflight-setup.md`.
@@ -80,13 +94,15 @@ Before executing any source route, verify the required tools:
 
 ## Audit flow contract
 
-Derive one `<run-slug>` for the whole invocation, using the first source slug by default and adding a numeric suffix only when needed for uniqueness.
+Derive one `<flow-slug>` for the whole invocation.
 
 Write:
 
-- `Design system audit/<run-slug>/flow.md`
-- `Design system audit/<run-slug>/pages/<page-slug>/ui-inspection.md`
-- `Design system audit/<run-slug>/pages/<page-slug>/screenshots/<page-slug>.png`
+- `Design system audit/<flow-slug>/flow.md`
+- `Design system audit/<flow-slug>/pages/<page-slug>/ui-inspection.md`
+- `Design system audit/<flow-slug>/pages/<page-slug>/screenshots/<page-slug>.png`
+- `Design system audit/<flow-slug>/observations/<component-key>/<page-slug>.md`
+- `Design system audit/<flow-slug>/observations/<component-key>/assets/<page-slug>.png`
 
 `flow.md` must record:
 
@@ -100,21 +116,13 @@ Every `ui-inspection.md` must use this top-level structure:
 
 ```md
 # UI Inspection
-
 ## Screenshot
-
 ## View metadata
-
 ## Page or screen purpose
-
 ## Structural breakdown (top to bottom)
-
 ## Component inventory
-
 ## Repeated patterns
-
 ## Layout observations
-
 ## Notes
 ```
 
@@ -122,70 +130,35 @@ Every component entry must use this shape:
 
 ```md
 ### Component: <name>
-
 Source of name
-
 Where it appears
-
 Structure
-
 Variants
-
 Usage
-
 Repetition
-
 Evidence handles
-
 Design system mapping
 ```
 
-## Required metadata fields
+### Additional contextual fields required for downstream usage synthesis
 
-`## View metadata` must always include:
+When available, each component observation should also preserve:
 
-- `Platform`
-- `Source kind`
-- `Source path or URL`
-- `Screenshot path`
-- `Screenshot provenance`
-- `Capture method`
-- `Goal`
-
-Include these when available:
-
-- `Sequence position`
-- `Sequence label`
-- `Repo path`
-- `Route or entry view`
-- `Figma file key`
-- `Figma node id`
-
-`Design system mapping` must always record:
-
-- `Mapping status`: `mapped` or `unresolved`
-- `Evidence source`: Code Connect, library instance, repo signal, source node, or package signal
-- `Library or system name` when known
-- `Component name`
-- `Code target` when known
-- `Notes`
-
-## Naming priority
-
-Use the first reliable naming source that applies:
-
-1. existing Code Connect mapping
-2. published library component name
-3. instance main-component name
-4. stable source identifier from code or DOM
-5. source node name
-6. `unknown`
-
-For non-Figma sources, do not jump above step 4 unless the evidence explicitly exists.
+- flow name
+- sequence position
+- previous step
+- next step
+- user intent on screen
+- layout mode
+- represented entity
+- surrounding components
+- grouping or nesting notes
+- instance generation pattern
+- content format notes
 
 ## Destination resolution
 
-Before writing component docs, resolve a canonical destination for each grouped component.
+Before writing component context docs, resolve a canonical destination for each grouped component.
 
 Use these signals as authoritative when available:
 
@@ -196,32 +169,12 @@ Use these signals as authoritative when available:
 
 Destination rules:
 
-1. If the component maps to an installed package file such as `@material/web/button/filled-button.js`, create a sibling component folder beside the resolved module file and write:
-   - `<resolved-component-folder>/README.md`
-   - `<resolved-component-folder>/assets/...`
-2. If the component maps to a repo-local DS target, write the canonical doc in that component location.
-3. If the repo has a DS kit but this component cannot be matched to it, write:
-   - `unmatched/<component-name>/README.md`
-   - `unmatched/<component-name>/assets/...`
-4. Only if no DS kit can be resolved for the repo at all, fall back to:
-   - `DS-system/<component-name>/README.md`
-   - `DS-system/<component-name>/assets/...`
+1. If the component maps to an installed package file, write contextual documentation beside the resolved component destination.
+2. If the component maps to a repo-local DS target, write contextual knowledge in that component location.
+3. If the repo has a DS kit but the component cannot be matched to it, write to `unmatched/<component>/`.
+4. Only if no DS kit can be resolved for the repo at all, fall back to `DS-system/<component>/`.
 
 Do not create a parallel `DS-system/` tree for matched components when a repo-backed DS kit already exists.
-
-## Figma section handling
-
-For Figma sections:
-
-- parse the URL into `fileKey` and `nodeId`
-- use `get_metadata` on the section node to enumerate direct child frames
-- require each direct child frame name to start with a two-digit order prefix such as `01`, `02`, `03`
-- stop and ask for numbering if any frame is missing a prefix or if prefixes are duplicated
-- process frames strictly by numeric prefix, not by canvas position
-- for each frame, run `get_screenshot` and `get_design_context`
-- use `get_code_connect_map` first, then `get_code_connect_suggestions`, then `search_design_system` if needed for mappings
-- write one page-level `ui-inspection.md` per frame under the shared audit flow
-- record the ordered frames in `flow.md`
 
 ## Evidence pipeline
 
@@ -229,16 +182,18 @@ After inspection artifacts exist:
 
 1. Read `references/evidence-generation.md`.
 2. Group evidence across the audit flow by final component key.
-3. Resolve the canonical destination for each grouped component.
-4. For web-backed evidence with reachable recorded URLs, rerender the page and capture component-local annotated screenshots by temporarily outlining the matched component instances in red. Use `scripts/capture-web-highlight.mjs` when `agent-browser` is available.
-5. Merge the grouped evidence into canonical `README.md` files directly.
-6. Create or update `CONFLICTS.md` only when meaningful conflicts exist.
-7. If a temporary `NEW.md` is created during execution, merge it in the same run and delete it before finishing.
+3. Generate per-page contextual observations before any canonical merge.
+4. Resolve the canonical destination for each grouped component.
+5. For web-backed evidence with reachable recorded URLs, rerender the page and capture component-local annotated screenshots by temporarily outlining the matched component instances in red.
+6. Store detailed observation files in `usage-context/`.
+7. Merge only contextual usage knowledge into the canonical component `README.md`.
+8. Create or update `CONFLICTS.md` only when meaningful contextual conflicts exist.
+9. If a temporary `NEW.md` is created during execution, merge it in the same run and delete it before finishing.
 
-Do not mark the evidence pipeline complete for a reachable web page until each selector-backed component has either:
+## Canonical merge rule
 
-- an annotated asset generated from the rerendered page
-- a note in the component `README.md` explaining the exact render or selector-matching failure that forced fallback to the original screenshot
+The canonical component `README.md` remains the source of truth for the component.
+This skill should enrich it with in-product usage context, not rewrite generic design-system guidance unless the user explicitly asks for that.
 
 ## References
 

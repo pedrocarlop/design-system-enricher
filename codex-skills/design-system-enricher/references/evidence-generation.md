@@ -4,7 +4,13 @@ Use this workflow after one or more `ui-inspection.md` artifacts already exist.
 
 ## Purpose
 
-Convert screenshot-grounded inspection evidence into canonical component `README.md` updates while preserving design-system mappings and per-page provenance.
+Convert screenshot-grounded inspection evidence into:
+
+1. per-page contextual component usage observations
+2. synthesized in-product usage knowledge
+3. contextual updates to canonical component `README.md` files
+
+The goal is to preserve design-system mappings and per-page provenance while adding a real product-context layer on top of existing design-system docs.
 
 ## Accepted inputs
 
@@ -16,13 +22,15 @@ Convert screenshot-grounded inspection evidence into canonical component `README
 
 - Read only the supplied inspection artifacts for content.
 - Preserve exact evidence-backed names unless mapping rules promote the component to a stronger authoritative name.
-- Screenshot links copied or captured into component `assets/` folders are required.
+- Screenshot links copied or captured into component `assets/` or `usage-context/` folders are required.
 - Preserve per-page provenance when combining observations from multiple inspections.
-- Resolve the canonical destination before writing component docs.
+- Preserve per-flow provenance.
+- Resolve the canonical destination before writing contextual component knowledge.
 - Do not leave `NEW.md` as a repository-stable artifact.
 - For web-backed inspections with a reachable recorded URL and selector-backed component evidence, attempt annotated component screenshots captured from a rerendered page in browser automation before copying raw screenshot fallbacks.
-- Use temporary browser-side highlighting only. Do not edit repo files just to create the annotation.
-- Do not silently use a raw screenshot fallback for web-backed evidence. If annotation capture fails, record the exact render or selector-matching failure in the component `README.md` notes.
+- Use temporary browser-side highlighting only.
+- Do not edit repo files just to create the annotation.
+- Do not silently use a raw screenshot fallback for web-backed evidence. If annotation capture fails, record the exact render or selector-matching failure in notes.
 
 ## Grouping rules
 
@@ -36,28 +44,32 @@ Group observations by final component key using this priority:
 If multiple pages contribute evidence for the same grouped component:
 
 - keep one canonical `README.md`
-- preserve separate observations where patterns differ
+- preserve separate page-level observations
 - include multiple screenshots when needed
-- record every contributing inspection path in `## Notes`
+- record every contributing inspection path
+- record every contributing flow step
+- prefer one annotated screenshot per contributing page for web-backed evidence
 
-For web-backed evidence, prefer one annotated screenshot per contributing page. If the page is reachable and the inspection provides stable selectors, annotated capture is required unless the selector match returns zero elements or the browser render fails.
+## Intermediate artifact rule
+
+Before merging into a canonical `README.md`, create normalized contextual observation files.
+
+For every grouped component and every contributing page, write:
+
+- one observation markdown file
+- one evidence screenshot
+- one normalized copy inside the component destination `usage-context/` folder
+
+Do not merge directly from raw inspection inventory into canonical README sections without creating these observations first.
 
 ## Destination resolution
 
 Resolve one destination root per grouped component:
 
-1. Installed package-backed DS mapping:
-   - `<resolved-package-component-folder>/README.md`
-   - `<resolved-package-component-folder>/assets/...`
-2. Repo-local DS component mapping:
-   - `<resolved-repo-component-folder>/README.md`
-   - `<resolved-repo-component-folder>/assets/...`
-3. Repo has a DS kit but this component is unmatched:
-   - `unmatched/<component-name>/README.md`
-   - `unmatched/<component-name>/assets/...`
-4. No DS kit can be resolved for the repo:
-   - `DS-system/<component-name>/README.md`
-   - `DS-system/<component-name>/assets/...`
+1. installed package-backed DS mapping
+2. repo-local DS component mapping
+3. `unmatched/` when the repo has a DS kit but the component is unmatched
+4. `DS-system/` when no DS kit exists
 
 Use these signals as authoritative when available:
 
@@ -66,99 +78,51 @@ Use these signals as authoritative when available:
 - direct imports and usages in source
 - a package or repo-local path that resolves on disk
 
-## Output shape
+## Contextual README output shape
 
-For each grouped component, write or update:
-
-- `<component-doc-root>/README.md`
-- `<component-doc-root>/assets/...`
-
-For web-backed observations, assets should come from a page rerender with the matched component instance or instances outlined in red before capture whenever the URL and selector evidence are usable.
-
-Use this exact section structure:
+For each grouped component, update or create contextual sections such as:
 
 ```md
-# <component-name>
-
-## Screenshot
-
-## What this component is
-
-## Where it is used
-
-## How it is used
-
-## Structure
-
-## Variants
-
-## Layout patterns
-
-## Relationships with other components
-
-## Usage rules (inferred)
-
-## Content patterns
-
-## Design system mapping
-
+## In-product usage
+## Where it appears across flows
+## Common layout patterns
+## Common grouping and nesting
+## Common content patterns
+## Variants observed in product
+## Evidence sources
 ## Notes
 ```
 
-## `## Design system mapping` contract
+## Observation content contract
 
-Always record:
+Each observation should capture:
 
-- `Mapping status`
-- `Evidence source`
-- `Library or system name`
-- `Component name`
-- `Code target`
-- `Screens or inspections`
-- `Notes`
-
-When no mapping exists, use:
-
-- `Mapping status: unresolved`
+- component name and name origin
+- flow location
+- where it appears in the journey
+- what it represents in that context
+- layout mode
+- grouping and nesting
+- observed structure
+- variants seen
+- content format
+- design-system mapping
+- screenshot evidence
+- ambiguity or inference notes
 
 ## Merge behavior
 
-- If no canonical `README.md` exists yet, create it directly from the current audit evidence.
-- If a canonical `README.md` already exists, merge the current audit evidence into it in the same run.
+- If no canonical `README.md` exists yet, create it with a contextual usage layer and preserve any existing repository conventions.
+- If a canonical `README.md` already exists, merge only contextual usage knowledge into it in the same run.
 - If a temporary `NEW.md` is used during execution, delete it before finishing.
-- Create `CONFLICTS.md` only when meaningful conflicts remain visible after the merge.
-
-## Web annotation workflow
-
-When an inspection artifact contains a web `Source path or URL`:
-
-1. Reopen the page in browser automation.
-2. Identify the component instances using only evidence already recorded in the inspection artifact.
-3. Inject temporary highlight styling, preferably a red outline or inset ring, onto the matched elements.
-4. Capture the annotated page screenshot into the component `assets/` folder.
-5. If matching fails or the page cannot be rendered, fall back to the original inspection screenshot for that page.
-
-This rerender is only for image generation. Do not use it to invent new content evidence.
-
-When `agent-browser` is available, use the bundled helper script instead of hand-rolling this step. Resolve `scripts/capture-web-highlight.mjs` relative to the installed `design-system-enricher` skill directory:
-
-```bash
-node <design-system-enricher-skill-dir>/scripts/capture-web-highlight.mjs \
-  --url "http://localhost:5174/#/courses/ui-systems" \
-  --selector ".progress-block" \
-  --component "progress-block" \
-  --output "unmatched/progress-block/assets/detail-page-progress-block.png"
-```
-
-The helper exits non-zero if the selector matches zero elements. Treat that as the only acceptable selector fallback condition, and include the helper output or a short summary of the failure in `## Notes`.
-
-Before finishing a web-backed component, verify that the component asset is not just an unannotated copy when the URL was reachable and selectors matched. A byte-identical asset is allowed only when the fallback reason is documented.
+- Create `CONFLICTS.md` only when meaningful contextual conflicts remain visible after the merge.
 
 ## Provenance rules
 
-`## Notes` must include:
+`## Notes` or `## Evidence sources` must include:
 
 - every contributing inspection path
 - screenshot provenance when useful
 - duplicate same-name observations when they were merged into one component file
 - flow ordering provenance when applicable
+- links to detailed observation files when available

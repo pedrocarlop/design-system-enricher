@@ -1,13 +1,18 @@
 ---
 name: ui-inspection-to-ds-system-usage
-description: Use when a user provides one or more `ui-inspection.md` files and wants canonical component usage docs extracted from their Component inventory into the resolved design-system destination. Trigger for requests to turn inspection reports into per-component `README.md` files without inventing components or leaving persistent `NEW.md` files behind.
+description: Use when a user provides one or more `ui-inspection.md` files and wants contextual component usage knowledge extracted from observed product flows and prepared for enrichment of canonical design-system docs.
 ---
 
 # UI Inspection To DS System Usage
 
-Use this skill when the source of truth is an existing inspection document such as `ui-inspection.md`, not a live page.
+Use this skill when the source of truth is one or more existing inspection documents such as `ui-inspection.md`, not a live page.
 
-The job is to convert audit evidence into canonical component docs.
+The job is **not** to recreate the generic component specification.
+
+The job is to convert audit evidence into:
+
+1. contextual per-page component usage observations
+2. a synthesized in-product usage layer for the canonical component doc
 
 ## Linear workflow position
 
@@ -17,7 +22,7 @@ This is step 2 of a 3-step repository workflow:
 2. `ui-inspection-to-ds-system-usage`
 3. `ds-system-knowledge-merge`
 
-This skill consumes the inspection artifact from step 1 and writes canonical `README.md` files plus component evidence assets.
+This skill consumes the inspection artifact from step 1 and prepares contextual component knowledge for merge.
 
 ## Source of truth
 
@@ -25,7 +30,7 @@ Only use the provided inspection markdown files.
 
 In the default linear workflow, those inputs are under:
 
-- `Design system audit/<run-slug>/pages/<page-slug>/ui-inspection.md`
+- `Design system audit/<flow-slug>/pages/<page-slug>/ui-inspection.md`
 
 Do not use:
 
@@ -33,22 +38,22 @@ Do not use:
 - visual inference beyond what the inspection already states
 - unrelated component docs as input
 
-For web-backed inspections, you may reopen the recorded page URL only to generate annotated evidence images for component docs. Do not use that rerender as a new source of truth for content extraction.
+For web-backed inspections, you may reopen the recorded page URL only to generate annotated evidence images for contextual usage records.
+Do not use that rerender as a new source of truth for content extraction.
 
 ## Non-negotiable rules
 
 - Read only the provided inspection document set for content.
-- Extract components only from the `## Component inventory` section.
+- Extract components only from the `## Component inventory` section unless the parent inspection explicitly includes relevant contextual metadata elsewhere.
 - Use the exact component names from `### Component: ...` unless an authoritative mapping promotes the destination.
 - Preserve per-page provenance.
-- Resolve the canonical destination before writing component docs.
-- Write or update `README.md` directly.
+- Preserve per-flow provenance.
+- Resolve the canonical destination before preparing merged contextual knowledge.
+- Generate contextual observation files before editing the canonical `README.md`.
+- Do not overwrite or recreate generic design-system guidance that is already canonical.
 - Do not leave `NEW.md` in the repository after a successful run.
-- Create `CONFLICTS.md` only when a real discrepancy remains visible after merge.
+- Create `CONFLICTS.md` only when a real contextual discrepancy remains visible after merge.
 - For web-backed inspections with a reachable `Source path or URL`, attempt component-local annotated screenshots through browser automation before copying the raw page screenshot unchanged.
-- Annotated screenshots must be created with temporary browser-side styling only, such as a red outline or red inset ring around the matched component instances.
-- Do not edit repo files or shipped CSS in order to create the highlight effect.
-- If the page cannot be rerendered or the component instances cannot be matched reliably from inspection evidence, fall back to the original page screenshot asset and record the exact fallback reason in the component `README.md`.
 
 ## Destination resolution
 
@@ -63,94 +68,111 @@ Destination order:
 
 1. installed package-backed DS component folder
 2. repo-local DS component folder
-3. `unmatched/<component-name>` when the repo has a DS kit but this component does not match it
-4. `DS-system/<component-name>` only when no DS kit can be resolved for the repo
+3. `unmatched/` when the repo has a DS kit but this component does not match it
+4. `DS-system/` only when no DS kit can be resolved for the repo
 
 For each component doc root, create or reuse:
 
-- `<component-doc-root>/README.md`
-- `<component-doc-root>/assets/`
+- `/README.md`
+- `/assets/`
+- `/usage-context/<flow-slug>/`
 
-For web-backed evidence, the preferred asset is an annotated screenshot captured specifically for that component on that page. If the URL is reachable and the inspection includes stable selectors, this is required unless selector matching or browser rendering fails.
+## Contextual observation output
 
-## Required section structure for each generated file
+For every component observation on every page, write:
+
+- `Design system audit/<flow-slug>/observations/<component-key>/<page-slug>.md`
+- `Design system audit/<flow-slug>/observations/<component-key>/assets/<page-slug>.png`
+
+And also copy normalized evidence into the component destination:
+
+- `<component-root>/usage-context/<flow-slug>/<page-slug>.md`
+- `<component-root>/usage-context/<flow-slug>/<page-slug>.png`
+
+## Required section structure for each observation file
 
 Use this exact structure:
 
 ```md
-# <component-name>
+# <component name> — observed usage
 
-## Screenshot
-
-## What this component is
-
-## Where it is used
-
-## How it is used
-
-## Structure
-
-## Variants
-
-## Layout patterns
-
-## Relationships with other components
-
-## Usage rules (inferred)
-
-## Content patterns
-
+## Source
+## Name origin
+## Where it appears in flow
+## What it represents here
+## Layout mode
+## Grouping and nesting
+## Observed structure
+## Variants observed on this page
+## Content format
 ## Design system mapping
-
+## Evidence
 ## Notes
 ```
 
-If no explicit variants are present, write:
+## Required section structure for contextual synthesis
 
-`None explicitly defined`
+This skill must prepare the following synthesized sections for the canonical component doc:
+
+```md
+## In-product usage
+## Where it appears across flows
+## Common layout patterns
+## Common grouping and nesting
+## Common content patterns
+## Variants observed in product
+## Evidence sources
+## Notes
+```
 
 ## Extraction workflow
 
 1. Read the provided inspection markdown files.
 2. Locate `## Component inventory`.
-3. Parse every `### Component: <name>` block.
-4. Group entries by final component key.
-5. Resolve the canonical destination for each grouped component.
-6. For each web-backed component observation, reopen the recorded page URL in browser automation, temporarily highlight the matched component instance or instances with a red stroke, and capture a component-specific evidence screenshot into `<component-doc-root>/assets/`. Use the bundled `capture-web-highlight.mjs` helper when `agent-browser` is available.
-7. For non-web evidence, or when rerender/highlight capture is not reliable, copy the original page screenshot asset(s) into `<component-doc-root>/assets/`.
-8. Write or update `<component-doc-root>/README.md`.
-9. If a temporary `NEW.md` was created during execution, merge it and delete it before finishing.
+3. Parse every `### Component:` block.
+4. Preserve page-level metadata such as screen purpose, sequence position, and provenance.
+5. Group entries by final component key.
+6. For each page-level observation, generate a contextual observation record.
+7. For web-backed component observations, reopen the recorded page URL in browser automation, temporarily highlight the matched component instance or instances, and capture a component-specific evidence screenshot.
+8. Write observation files into the audit flow.
+9. Write normalized copies into the component `usage-context/` destination.
+10. Build a contextual synthesis per component.
+11. Hand off that synthesis to the merge step.
 
-## Web highlight capture rules
+## Observation writing rules
 
-When a component observation comes from a web inspection:
+For each observed usage, document:
 
-- Use `Source path or URL` from `## View metadata` to load the page.
-- Match elements only from evidence already present in the inspection, such as rendered DOM signals, stable custom element tags, named wrappers, and `Where it appears` notes.
-- Apply a temporary red outline to the matched element set before capturing the screenshot.
-- If the same component appears multiple times in the same page context, highlight all matched instances in the page-level evidence image unless the inspection clearly distinguishes a single usage that should be isolated.
-- Remove or discard the temporary styling after capture. The live app and repo files must remain unchanged.
-- Keep filenames stable per page when possible, but annotated names such as `<page-slug>-highlight.png` are allowed when they avoid collisions or make intent clearer.
-- If `agent-browser` is available, run the bundled helper script with the recorded URL, one or more selectors from `Evidence handles`, the component name, and the final asset path. A zero-element match is a failure, not a success.
-- Before finishing, compare reachable selector-backed web assets against the original page screenshot. If the asset is byte-identical, either regenerate it with a highlight or document the exact fallback reason.
+- component name and where the name came from
+- where it appears as part of the flow
+- what happens before and after this screen when known
+- what the component represents in this product context
+- whether it is used in a list, inline, grid, grouped section, card group, or another layout mode
+- how it is grouped or nested with surrounding elements
+- its observed internal structure
+- variants seen in evidence
+- recurring content format such as title length, supporting text style, metadata format, value placement, and status format
+- screenshot evidence
 
-## Handling repeated evidence
+Do not turn these observations into generic component doctrine.
 
-If multiple pages contribute evidence for the same component:
+## Synthesis rules
 
-- keep one canonical `README.md`
-- preserve separate observations when patterns differ
-- note all contributing inspection paths in `## Notes`
-- include multiple screenshots when needed
-- prefer one annotated screenshot per contributing page for web-backed evidence
+When preparing the contextual layer for the canonical component doc:
+
+- summarize patterns that repeat across flows
+- preserve separate patterns when they differ meaningfully
+- distinguish observed, inferred, and unknown
+- link back to the underlying observation files
+- do not overwrite generic sections such as universal best practices unless the user explicitly requested a broader rewrite
 
 ## Validation checklist
 
 Before finishing, verify:
 
-- every grouped component produced a canonical `README.md`
-- every component doc root contains an `assets/` directory with the component evidence asset(s)
+- every grouped component produced contextual observation files
+- every component doc root contains a `usage-context/` directory when contextual evidence exists
 - no component names were invented
 - no persistent `NEW.md` files remain
-- every generated `README.md` follows the required section structure
-- every generated `README.md` includes valid relative links to the component evidence asset(s)
+- the canonical `README.md` was not treated as blank if it already existed
+- the contextual synthesis is ready for merge into the canonical component doc

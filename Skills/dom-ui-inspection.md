@@ -84,6 +84,20 @@ For each component entry, include:
 - `Usage`
 - `Repetition`
 
+## Additional recommended fields per component entry
+
+When available, also record:
+
+- `Flow context`
+- `Sequence position`
+- `Previous step`
+- `Next step`
+- `What it represents`
+- `Layout mode`
+- `Grouping and nesting`
+- `Surrounding components`
+- `Content format`
+
 ## Validation checklist
 
 Before finishing, verify:
@@ -95,3 +109,4 @@ Before finishing, verify:
 - every named component comes from a real selector or stable DOM signal
 - no design-system names were invented
 - the page appears in `flow.md`
+- every component entry preserves enough contextual detail for downstream usage synthesis
