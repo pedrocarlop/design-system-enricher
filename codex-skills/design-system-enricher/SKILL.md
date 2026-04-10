@@ -48,6 +48,7 @@ Supported sources:
 - Preserve per-page provenance even when later grouping evidence across multiple pages.
 - Resolve the canonical component-doc destination before writing any component `README.md`.
 - Do not leave persistent `NEW.md` files after a successful workflow.
+- For web-backed inspections with reachable URLs and selector-backed evidence, do not silently copy the raw page screenshot as the component asset. Attempt annotated highlight capture first, then record an explicit fallback reason if it fails.
 
 ## Source routing
 
@@ -229,10 +230,15 @@ After inspection artifacts exist:
 1. Read `references/evidence-generation.md`.
 2. Group evidence across the audit flow by final component key.
 3. Resolve the canonical destination for each grouped component.
-4. For web-backed evidence with reachable recorded URLs, rerender the page and capture component-local annotated screenshots by temporarily outlining the matched component instances in red.
+4. For web-backed evidence with reachable recorded URLs, rerender the page and capture component-local annotated screenshots by temporarily outlining the matched component instances in red. Use `scripts/capture-web-highlight.mjs` when `agent-browser` is available.
 5. Merge the grouped evidence into canonical `README.md` files directly.
 6. Create or update `CONFLICTS.md` only when meaningful conflicts exist.
 7. If a temporary `NEW.md` is created during execution, merge it in the same run and delete it before finishing.
+
+Do not mark the evidence pipeline complete for a reachable web page until each selector-backed component has either:
+
+- an annotated asset generated from the rerendered page
+- a note in the component `README.md` explaining the exact render or selector-matching failure that forced fallback to the original screenshot
 
 ## References
 

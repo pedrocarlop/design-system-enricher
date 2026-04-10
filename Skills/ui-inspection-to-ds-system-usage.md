@@ -45,10 +45,10 @@ For web-backed inspections, you may reopen the recorded page URL only to generat
 - Write or update `README.md` directly.
 - Do not leave `NEW.md` in the repository after a successful run.
 - Create `CONFLICTS.md` only when a real discrepancy remains visible after merge.
-- For web-backed inspections with a reachable `Source path or URL`, prefer capturing component-local annotated screenshots through browser automation instead of copying the raw page screenshot unchanged.
+- For web-backed inspections with a reachable `Source path or URL`, attempt component-local annotated screenshots through browser automation before copying the raw page screenshot unchanged.
 - Annotated screenshots must be created with temporary browser-side styling only, such as a red outline or red inset ring around the matched component instances.
 - Do not edit repo files or shipped CSS in order to create the highlight effect.
-- If the page cannot be rerendered or the component instances cannot be matched reliably from inspection evidence, fall back to the original page screenshot asset.
+- If the page cannot be rerendered or the component instances cannot be matched reliably from inspection evidence, fall back to the original page screenshot asset and record the exact fallback reason in the component `README.md`.
 
 ## Destination resolution
 
@@ -71,7 +71,7 @@ For each component doc root, create or reuse:
 - `<component-doc-root>/README.md`
 - `<component-doc-root>/assets/`
 
-For web-backed evidence, the preferred asset is an annotated screenshot captured specifically for that component on that page.
+For web-backed evidence, the preferred asset is an annotated screenshot captured specifically for that component on that page. If the URL is reachable and the inspection includes stable selectors, this is required unless selector matching or browser rendering fails.
 
 ## Required section structure for each generated file
 
@@ -116,7 +116,7 @@ If no explicit variants are present, write:
 3. Parse every `### Component: <name>` block.
 4. Group entries by final component key.
 5. Resolve the canonical destination for each grouped component.
-6. For each web-backed component observation, reopen the recorded page URL in browser automation, temporarily highlight the matched component instance or instances with a red stroke, and capture a component-specific evidence screenshot into `<component-doc-root>/assets/`.
+6. For each web-backed component observation, reopen the recorded page URL in browser automation, temporarily highlight the matched component instance or instances with a red stroke, and capture a component-specific evidence screenshot into `<component-doc-root>/assets/`. Use the bundled `capture-web-highlight.mjs` helper when `agent-browser` is available.
 7. For non-web evidence, or when rerender/highlight capture is not reliable, copy the original page screenshot asset(s) into `<component-doc-root>/assets/`.
 8. Write or update `<component-doc-root>/README.md`.
 9. If a temporary `NEW.md` was created during execution, merge it and delete it before finishing.
@@ -131,6 +131,8 @@ When a component observation comes from a web inspection:
 - If the same component appears multiple times in the same page context, highlight all matched instances in the page-level evidence image unless the inspection clearly distinguishes a single usage that should be isolated.
 - Remove or discard the temporary styling after capture. The live app and repo files must remain unchanged.
 - Keep filenames stable per page when possible, but annotated names such as `<page-slug>-highlight.png` are allowed when they avoid collisions or make intent clearer.
+- If `agent-browser` is available, run the bundled helper script with the recorded URL, one or more selectors from `Evidence handles`, the component name, and the final asset path. A zero-element match is a failure, not a success.
+- Before finishing, compare reachable selector-backed web assets against the original page screenshot. If the asset is byte-identical, either regenerate it with a highlight or document the exact fallback reason.
 
 ## Handling repeated evidence
 

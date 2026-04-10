@@ -16,12 +16,13 @@ Convert screenshot-grounded inspection evidence into canonical component `README
 
 - Read only the supplied inspection artifacts for content.
 - Preserve exact evidence-backed names unless mapping rules promote the component to a stronger authoritative name.
-- Screenshot links copied into component `assets/` folders are required.
+- Screenshot links copied or captured into component `assets/` folders are required.
 - Preserve per-page provenance when combining observations from multiple inspections.
 - Resolve the canonical destination before writing component docs.
 - Do not leave `NEW.md` as a repository-stable artifact.
-- For web-backed inspections with a reachable recorded URL, prefer annotated component screenshots captured from a rerendered page in browser automation over raw screenshot copies.
+- For web-backed inspections with a reachable recorded URL and selector-backed component evidence, attempt annotated component screenshots captured from a rerendered page in browser automation before copying raw screenshot fallbacks.
 - Use temporary browser-side highlighting only. Do not edit repo files just to create the annotation.
+- Do not silently use a raw screenshot fallback for web-backed evidence. If annotation capture fails, record the exact render or selector-matching failure in the component `README.md` notes.
 
 ## Grouping rules
 
@@ -39,7 +40,7 @@ If multiple pages contribute evidence for the same grouped component:
 - include multiple screenshots when needed
 - record every contributing inspection path in `## Notes`
 
-For web-backed evidence, prefer one annotated screenshot per contributing page.
+For web-backed evidence, prefer one annotated screenshot per contributing page. If the page is reachable and the inspection provides stable selectors, annotated capture is required unless the selector match returns zero elements or the browser render fails.
 
 ## Destination resolution
 
@@ -72,7 +73,7 @@ For each grouped component, write or update:
 - `<component-doc-root>/README.md`
 - `<component-doc-root>/assets/...`
 
-For web-backed observations, assets should prefer a page rerender with the matched component instance or instances outlined in red before capture.
+For web-backed observations, assets should come from a page rerender with the matched component instance or instances outlined in red before capture whenever the URL and selector evidence are usable.
 
 Use this exact section structure:
 
@@ -138,6 +139,20 @@ When an inspection artifact contains a web `Source path or URL`:
 5. If matching fails or the page cannot be rendered, fall back to the original inspection screenshot for that page.
 
 This rerender is only for image generation. Do not use it to invent new content evidence.
+
+When `agent-browser` is available, use the bundled helper script instead of hand-rolling this step. Resolve `scripts/capture-web-highlight.mjs` relative to the installed `design-system-enricher` skill directory:
+
+```bash
+node <design-system-enricher-skill-dir>/scripts/capture-web-highlight.mjs \
+  --url "http://localhost:5174/#/courses/ui-systems" \
+  --selector ".progress-block" \
+  --component "progress-block" \
+  --output "unmatched/progress-block/assets/detail-page-progress-block.png"
+```
+
+The helper exits non-zero if the selector matches zero elements. Treat that as the only acceptable selector fallback condition, and include the helper output or a short summary of the failure in `## Notes`.
+
+Before finishing a web-backed component, verify that the component asset is not just an unannotated copy when the URL was reachable and selectors matched. A byte-identical asset is allowed only when the fallback reason is documented.
 
 ## Provenance rules
 
